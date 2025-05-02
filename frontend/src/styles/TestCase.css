@@ -1,0 +1,33 @@
+#testCaseForm{
+    width: 90%;
+    padding-top: 10px;
+    margin: auto;
+}
+.form-group { 
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px; 
+}
+label { 
+    display: block; 
+    font-weight: bold; 
+    margin-bottom: 5px; 
+}
+input, select, textarea { 
+    width: 100%; 
+    padding: 8px; 
+    box-sizing: border-box; 
+}
+button { 
+    padding: 10px 20px; 
+    background: #36A2EB; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+}
+button:hover { 
+    background: #2a8bc9; 
+}
+.template-selector { 
+    margin-bottom: 10px; 
+}
