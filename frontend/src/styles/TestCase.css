@@ -3,9 +3,19 @@
     padding-top: 10px;
     margin: auto;
 }
-.form-group { 
+.row {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
+    position: relative;
+    flex-wrap: wrap;
+    gap: auto;
+    width: 100%;
+}
+
+.form-group {
+    position: relative; 
+    display: flex;
+    gap: 20px;
     margin-bottom: 15px; 
 }
 label { 
@@ -13,10 +23,37 @@ label {
     font-weight: bold; 
     margin-bottom: 5px; 
 }
-input, select, textarea { 
-    width: 100%; 
+input{ 
+    width: 100%;
     padding: 8px; 
     box-sizing: border-box; 
+}
+select{ 
+    width: 100%;
+    font-size: 12px;
+    height: 30px;
+    padding: 2px; 
+    box-sizing: border-box; 
+}
+textarea { 
+    width: 100%;
+    min-height: 300px;
+    max-height: 600px;
+    resize: vertical;
+    padding: 8px; 
+    box-sizing: border-box; 
+}
+.required-time{
+    display: flex;
+    gap: 5px;
+}
+.time{
+    display: flex;
+    gap: 5px;
+}
+.input-time{
+    width: 60px;
+    height: 20px;
 }
 button { 
     padding: 10px 20px; 
@@ -29,5 +66,11 @@ button:hover {
     background: #2a8bc9; 
 }
 .template-selector { 
+    width: 20%;
+    min-width: 150px;
     margin-bottom: 10px; 
+}
+#description{
+    min-height: 200px;
+    resize: none;
 }

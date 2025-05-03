@@ -1,11 +1,16 @@
 import './App.css';
 
-import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
+import { AuthProvider } from './context/AuthContext.tsx';
 import Home from './pages/Home';
+import HomePage from './pages/HomePage.tsx';
+import LoginPage from './pages/LoginPage.tsx';
 import NewPlan from './pages/New-plan';
 import NewTest from './pages/New-test';
+import PrivateRoute from './components/PrivateRoute.tsx';
+import React from 'react';
 import Search from './pages/Search';
 import User from './pages/User';
 
@@ -41,15 +46,13 @@ function MyHeader() {
             onMouseLeave={handleMouseLeave}
             className="nav-item-with-submenu">
           <Link to={value.main}>{key}</Link>
-          {showSubmenu && (
-            <ul className="submenu">
-              {value.submenu.map(([subName, subPath]) => (
-                <li key={subPath}>
-                  <Link to={subPath}>{subName}</Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className={`submenu ${showSubmenu ? 'visible' : ''}`}>
+            {value.submenu.map(([subName, subPath]) => (
+              <li key={subPath}>
+                <Link to={subPath}>{subName}</Link>
+              </li>
+            ))}
+          </ul>
         </li>
       );
     }
@@ -75,19 +78,25 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <div className="App">
-        <MyHeader />
-        <Routes>
+    <div className='App'>
+    <AuthProvider>
+    <BrowserRouter>
+      <MyHeader />
+            <Routes>
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route element={<PrivateRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/cases/new" element={<NewTest />} />
           <Route path="/plan/new" element={<NewPlan />} />
           <Route path="/user" element={<User />} />
-          <Route path="/search" element={<Search/>}/>
-        </Routes>
-      </div>
-    </Router>
-  );
+          <Route path="/search" element={<Search />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </AuthProvider>
+  </div>
+  )
 }
 
 export default App;

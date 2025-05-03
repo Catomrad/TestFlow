@@ -3,16 +3,16 @@ import React from "react";
 function NewPlan(){
     return (
         <>
-        <form action="" method="get" class="form-example">
-            <div class="form-example">
-                <label for="name">Название </label>
+        <form action="" method="get" className="form-example">
+            <div className="form-example">
+                <label htmlFor="name">Название </label>
                 <input type="text" name="name" id="name" required />
             </div>
-            <div class="form-example">
-                <label for="email">Описание</label>
+            <div className="form-example">
+                <label htmlFor="email">Описание</label>
                 <input type="email" name="email" id="email" required />
             </div>
-            <div class="form-example">
+            <div className="form-example">
                 <input type="submit" value="Subscribe!" />
             </div>
         </form>

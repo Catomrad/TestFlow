@@ -3,7 +3,7 @@ import React from "react";
 const cases = [1, 2, 3, 4];
 
 const listCases = cases.map(item =>
-    <li>{item}</li>
+    <li key={item}>{item}</li>
 )
 
 

@@ -58,3 +58,12 @@ nav ul li a:hover {
 .nav-item-with-submenu {
   position: relative;
 }
+
+.submenu {
+  display: none;
+  /* Остальные стили для подменю */
+}
+
+.submenu.visible {
+  display: block;
+}
