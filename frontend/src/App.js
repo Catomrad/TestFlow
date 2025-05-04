@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 
 import { AuthProvider } from './context/AuthContext.tsx';
 import Home from './pages/Home';
-import HomePage from './pages/HomePage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import NewPlan from './pages/New-plan';
 import NewTest from './pages/New-test';
@@ -72,6 +71,12 @@ function MyHeader() {
   );
 }
 
+function MyFooter(){
+  return (
+    <footer style={{height: '30px'}}></footer>
+  )
+}
+
 function App() {
   useEffect(() => {
     document.title = "TestFlow";
@@ -81,10 +86,9 @@ function App() {
     <div className='App'>
     <AuthProvider>
     <BrowserRouter>
-      <MyHeader />
-            <Routes>
+    <MyHeader />
+      <Routes>
         <Route path="/login" element={<LoginPage />} />
-
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/cases/new" element={<NewTest />} />
@@ -93,6 +97,7 @@ function App() {
           <Route path="/search" element={<Search />} />
         </Route>
       </Routes>
+      <MyFooter />
     </BrowserRouter>
   </AuthProvider>
   </div>

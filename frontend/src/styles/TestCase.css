@@ -1,4 +1,4 @@
-#testCaseForm{
+/* #testCaseForm{
     width: 90%;
     padding-top: 10px;
     margin: auto;
@@ -73,4 +73,96 @@ button:hover {
 #description{
     min-height: 200px;
     resize: none;
-}
+} */
+
+#testCaseForm {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  #testCaseForm .form-group {
+    margin-bottom: 1.2rem;
+  }
+
+  #testCaseForm .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  #testCaseForm .form-group input[type="text"],
+  #testCaseForm select,
+  #testCaseForm textarea {
+    width: 100%;
+    padding: 0.7rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+  
+  #testCaseForm input[type="text"]:focus,
+  #testCaseForm input[type="number"]:focus,
+  #testCaseForm select:focus,
+  #testCaseForm textarea:focus {
+    border-color: #4a90e2;
+    outline: none;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+  }
+  
+  #testCaseForm textarea {
+    min-height: 300px;
+    resize: vertical;
+  }
+
+  #testCaseForm #description {
+    min-height: 100px;
+  }
+  
+  #testCaseForm .required-time {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  #testCaseForm .time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  #testCaseForm .input-time {
+    width: 60px;
+    padding: 0.4rem;
+    font-size: 0.95rem;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  
+  
+  #testCaseForm button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    font-size: 1rem;
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  #testCaseForm button[type="submit"]:hover {
+    background-color: #357abd;
+  }
+  

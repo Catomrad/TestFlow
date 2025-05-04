@@ -2,16 +2,10 @@
   "name": "testflow",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"cd frontend && npm start\" \"nodemon server.js\""
-  },
-  "dependencies": {
-    "express": "^5.1.0",
-    "marked": "^15.0.11",
-    "react-select": "^5.10.1",
-    "simplemde": "^1.11.2"
+    "start": "concurrently \"cd frontend && npm start\" \"cd backend && npm run dev\""
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
-    "nodemon": "^3.1.10"
+    "concurrently": "^9.1.2"
   }
 }
+
