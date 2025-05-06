@@ -10,6 +10,8 @@ function User() {
 
   if (!user) return <p>Нет данных о пользователе</p>;
 
+  const isAdmin = user.role === 'admin';
+
   const handleInvite = () => {
     if (selectedProject && invitee) {
       inviteUser(selectedProject, invitee);
@@ -29,7 +31,7 @@ function User() {
       <h1>Имя пользователя: {user.username}</h1>
       <h2>Статус: {user.role}</h2>
 
-      <div>
+      {/* <div>
         <h3>Проекты:</h3>
         {user.projects.map((projectName, idx) => {
           const project = projects.find(p => p.name === projectName);
@@ -51,38 +53,41 @@ function User() {
             </div>
           );
         })}
-      </div>
+      </div> */}
 
-      {user.role === 'Админ' && (
+      {isAdmin && (
         <>
-          <div>
-            <h3>Создать новый проект</h3>
-            <input
-              type="text"
-              placeholder="Название проекта"
-              value={newProjectName}
-              onChange={e => setNewProjectName(e.target.value)}
-            />
-            <button onClick={handleCreateProject}>Создать</button>
-          </div>
-
-          <div>
-            <h3>Пригласить пользователя</h3>
-            <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
-              <option value="">Выберите проект</option>
-              {user.projects.map((p, idx) => (
-                <option key={idx} value={p}>{p}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Логин пользователя"
-              value={invitee}
-              onChange={e => setInvitee(e.target.value)}
-            />
-            <button onClick={handleInvite}>Пригласить</button>
-          </div>
+        <h4>Здесь будет добавление участников</h4>
         </>
+        // <>
+        //   <div>
+        //     <h3>Создать новый проект</h3>
+        //     <input
+        //       type="text"
+        //       placeholder="Название проекта"
+        //       value={newProjectName}
+        //       onChange={e => setNewProjectName(e.target.value)}
+        //     />
+        //     <button onClick={handleCreateProject}>Создать</button>
+        //   </div>
+
+        //   <div>
+        //     <h3>Пригласить пользователя</h3>
+        //     <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
+        //       <option value="">Выберите проект</option>
+        //       {user.projects.map((p, idx) => (
+        //         <option key={idx} value={p}>{p}</option>
+        //       ))}
+        //     </select>
+        //     <input
+        //       type="text"
+        //       placeholder="Логин пользователя"
+        //       value={invitee}
+        //       onChange={e => setInvitee(e.target.value)}
+        //     />
+        //     <button onClick={handleInvite}>Пригласить</button>
+        //   </div>
+        // </>
       )}
     </>
   );

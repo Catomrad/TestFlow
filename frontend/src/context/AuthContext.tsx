@@ -1,127 +1,83 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface Project {
-name: string;
-members: string[];
-}
+import axios from 'axios';
 
-interface UserType {
-username: string;
-role: 'Админ' | 'Пользователь';
-projects: string[];
-}
+interface User {
+     id: number;
+     username: string;
+     role: 'admin' | 'user';
+   }
 
-interface AuthContextType {
-isAuthenticated: boolean;
-user: UserType | null;
-login: (username: string, password: string) => void;
-logout: () => void;
-register: (username: string, password: string, role: 'Админ' | 'Пользователь', projectName?: string) => void;
-inviteUser: (projectName: string, username: string) => void;
-createProject: (projectName: string) => void;
-projects: Project[];
-usersList: UserType[];
+   interface AuthContextType {
+     isAuthenticated: boolean;
+     user: User | null;
+     login: (username: string, password: string) => Promise<void>;
+     register: (username: string, password: string, role: 'admin' | 'user', projectName?: string) => Promise<void>;
+     logout: () => void;
+   }
 
-}
+   const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+   export const useAuth = () => {
+     const context = useContext(AuthContext);
+     if (!context) throw new Error('useAuth must be used within AuthProvider');
+     return context;
+   };
 
-export const useAuth = () => {
-const context = useContext(AuthContext);
-if (!context) throw new Error('useAuth must be used within AuthProvider');
-return context;
-};
+   export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+     const [isAuthenticated, setIsAuthenticated] = useState(false);
+     const [user, setUser] = useState<User | null>(null);
+     const [isLoading, setIsLoading] = useState(true);
 
+     const checkAuth = async () => {
+       const token = localStorage.getItem('token');
+       if (token) {
+         try {
+           const response = await axios.get('http://localhost:5000/api/auth/me', {
+             headers: { Authorization: `Bearer ${token}` },
+           });
+           setUser(response.data.user);
+           setIsAuthenticated(true);
+         } catch (error) {
+           localStorage.removeItem('token');
+           setUser(null);
+           setIsAuthenticated(false);
+         }
+       }
+       setIsLoading(false);
+     };
 
+     useEffect(() => {
+       checkAuth();
+     }, []);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [user, setUser] = useState<UserType | null>(null);
-const [users, setUsers] = useState<UserType[]>([]);
-const [projects, setProjects] = useState<Project[]>([]);
+     const login = async (username: string, password: string) => {
+       const response = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+       localStorage.setItem('token', response.data.token);
+       setUser(response.data.user);
+       setIsAuthenticated(true);
+     };
 
-const login = (username: string, password: string) => {
-  const existingUser = users.find(u => u.username === username);
-  if (existingUser) {
-    setUser(existingUser);
-    setIsAuthenticated(true);
-  }
-};
+     const register = async (username: string, password: string, role: 'admin' | 'user', projectName?: string) => {
+       const response = await axios.post('http://localhost:5000/api/auth/register', { username, password, role, projectName });
+       localStorage.setItem('token', response.data.token);
+       setUser(response.data.user);
+       setIsAuthenticated(true);
+     };
 
-const createProject = (projectName: string) => {
-  if (!user || user.role !== 'Админ') return;
-  const newProject: Project = { name: projectName, members: [user.username] };
-  setProjects(prev => [...prev, newProject]);
+     const logout = () => {
+       localStorage.removeItem('token');
+       setUser(null);
+       setIsAuthenticated(false);
+     };
 
-  // Обновляем пользователя
-  setUsers(prev =>
-    prev.map(u =>
-      u.username === user.username
-        ? { ...u, projects: [...u.projects, projectName] }
-        : u
-    )
-  );
+     if (isLoading) {
+       return <div>Loading...</div>;
+     }
 
-  setUser(prev =>
-    prev ? { ...prev, projects: [...prev.projects, projectName] } : prev
-  );
-};
-
-
-const register = (username: string, password: string, role: 'Админ' | 'Пользователь', projectName?: string) => {
-  let userProjects: string[] = [];
-
-  if (role === 'Админ' && projectName) {
-    const newProject: Project = { name: projectName, members: [username] };
-    setProjects(prev => [...prev, newProject]);
-    userProjects = [projectName];
-  }
-
-  const newUser: UserType = { username, role, projects: userProjects };
-  setUsers(prev => [...prev, newUser]);
-  setUser(newUser);
-  setIsAuthenticated(true);
-};
-
-const inviteUser = (projectName: string, invitedUsername: string) => {
-  setProjects(prev =>
-    prev.map(p =>
-      p.name === projectName && !p.members.includes(invitedUsername)
-        ? { ...p, members: [...p.members, invitedUsername] }
-        : p
-    )
-  );
-
-  setUsers(prev =>
-    prev.map(u =>
-      u.username === invitedUsername && !u.projects.includes(projectName)
-        ? { ...u, projects: [...u.projects, projectName] }
-        : u
-    )
-  );
-
-  if (user?.username === invitedUsername) {
-    setUser(prev =>
-      prev ? { ...prev, projects: [...prev.projects, projectName] } : prev
-    );
-  }
-};
-
-const logout = () => {
-  setUser(null);
-  setIsAuthenticated(false);
-};
-
-return (
-  <AuthContext.Provider value={{ 
-    isAuthenticated, user, 
-    login, logout, 
-    register, inviteUser, 
-    createProject, projects, 
-    usersList: users 
-    }}>
-
-    {children}
-  </AuthContext.Provider>
-);
-};
+     return (
+       <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout }}>
+         {children}
+       </AuthContext.Provider>
+     );
+   };

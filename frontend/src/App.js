@@ -88,7 +88,7 @@ function App() {
     <BrowserRouter>
     <MyHeader />
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth" element={<LoginPage />} />
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/cases/new" element={<NewTest />} />
