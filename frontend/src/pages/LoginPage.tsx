@@ -1,3 +1,5 @@
+import '../styles/LoginPage.css';
+
 import React, { useState } from 'react';
 
 import { useAuth } from '../context/AuthContext.tsx';
@@ -28,76 +30,89 @@ const LoginPage: React.FC = () => {
       }
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error occurred');
+      setError(err.response?.data?.message || 'An error occurred');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        {isRegister ? 'Register' : 'Login'}
+    <div className="auth-container">
+      <h2 className="auth-title">
+        {isRegister ? 'Create Account' : 'Sign In'}
       </h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700">Username</label>
+      {error && <p className="auth-error">{error}</p>}
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="username" className="form-label">
+            Username
+          </label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="form-input"
             required
+            aria-describedby="username-error"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Password</label>
+        <div className="form-group">
+          <label htmlFor="password" className="form-label">
+            Password
+          </label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="form-input"
             required
+            aria-describedby="password-error"
           />
         </div>
         {isRegister && (
           <>
-            <div className="mb-4">
-              <label className="block text-gray-700">Role</label>
+            <div className="form-group">
+              <label htmlFor="role" className="form-label">
+                Role
+              </label>
               <select
+                id="role"
                 value={role}
                 onChange={e => setRole(e.target.value as 'admin' | 'user')}
-                className="w-full p-2 border rounded"
+                className="form-input"
               >
-                <option value="admin">Admin</option>
+                <option value="admin">Administrator</option>
                 <option value="user">User</option>
               </select>
             </div>
             {role === 'admin' && (
-              <div className="mb-4">
-                <label className="block text-gray-700">Project Name</label>
+              <div className="form-group">
+                <label htmlFor="projectName" className="form-label">
+                  Project Name
+                </label>
                 <input
+                  id="projectName"
                   type="text"
                   value={projectName}
                   onChange={e => setProjectName(e.target.value)}
-                  className="w-full p-2 border rounded"
+                  className="form-input"
                   required
                 />
               </div>
             )}
           </>
         )}
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        >
-          {isRegister ? 'Register' : 'Login'}
+        <button type="submit" className="auth-button">
+          {isRegister ? 'Create Account' : 'Sign In'}
         </button>
       </form>
       <button
         onClick={() => setIsRegister(!isRegister)}
-        className="mt-4 text-blue-500 hover:underline"
+        className="auth-toggle"
       >
-        {isRegister ? 'Already have an account? Login' : 'No account? Register'}
+        {isRegister
+          ? 'Already have an account? Sign In'
+          : 'Need an account? Register'}
       </button>
     </div>
   );
