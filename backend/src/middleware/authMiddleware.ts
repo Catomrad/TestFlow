@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import jwt from 'jsonwebtoken';
 
 interface UserPayload {
-  id: string;
+  id: number;
   role: string;
 }
 

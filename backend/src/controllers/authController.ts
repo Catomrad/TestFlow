@@ -19,6 +19,20 @@ interface LoginRequest {
   password: string;
 }
 
+interface UserPayload {
+  id: number;
+  role: string;
+}
+
+// Расширяем тип Request для включения пользователя
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserPayload;
+    }
+  }
+}
+
 const registerUser = async (req: Request, res: Response) => {
   const { username, password, role, projectName } = req.body as RegisterRequest;
 
@@ -38,24 +52,28 @@ const registerUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     let user;
 
-    if (role === 'admin') {
-      user = await prisma.$transaction(async (prisma: PrismaClient) => {
-        const newUser = await prisma.user.create({
+    if (role === 'admin' && projectName) {
+      // Используем правильный синтаксис для транзакций Prisma
+      user = await prisma.$transaction(async (tx: any) => {
+        const newUser = await tx.user.create({
           data: { username, password: hashedPassword, role },
         });
-        const project = await prisma.project.create({
+        
+        const project = await tx.project.create({
           data: {
-            name: projectName,
+            name: projectName || 'Default Project', // Убедимся, что имя проекта всегда определено
             createdById: newUser.id,
           },
         });
-        await prisma.projectMember.create({
+        
+        await tx.projectMember.create({
           data: {
             userId: newUser.id,
             projectId: project.id,
             role: 'admin',
           },
         });
+        
         return newUser;
       });
     } else {
@@ -64,14 +82,13 @@ const registerUser = async (req: Request, res: Response) => {
       });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: '7d',
-    });
-    res.json({
-      token,
-      user: { id: user.id, username: user.username, role: user.role },
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ 
+      token, 
+      user: { id: user.id, username: user.username, role: user.role } 
     });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -90,12 +107,10 @@ const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: '7d',
-    });
-    res.json({
-      token,
-      user: { id: user.id, username: user.username, role: user.role },
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ 
+      token, 
+      user: { id: user.id, username: user.username, role: user.role } 
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -110,7 +125,7 @@ const getCurrentUser = async (req: Request, res: Response) => {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId }, // ID должен быть числом, согласно схеме Prisma
       select: { id: true, username: true, role: true },
     });
 
