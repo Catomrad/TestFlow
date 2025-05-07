@@ -5,7 +5,10 @@
     "start": "concurrently \"cd frontend && npm start\" \"cd backend && npm run dev\""
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@types/express": "^5.0.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.15.14",
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.3"
   }
 }
-

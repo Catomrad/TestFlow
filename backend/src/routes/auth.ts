@@ -1,11 +1,20 @@
-const express = require('express');
-   const { register, login, getCurrent } = require('../controllers/authController.ts');
-   const { authenticateToken } = require('../../middleware/authMiddleware.ts');
+import express, { RequestHandler, Router } from 'express';
+import {
+  getCurrentUser,
+  loginUser,
+  registerUser,
+} from '../controllers/authController';
 
-   const router = express.Router();
+import { authenticateToken } from '../middleware/authMiddleware';
 
-   router.post('/register', register);
-   router.post('/login', login);
-   router.get('/me', authenticateToken, getCurrent);
+const router = express.Router();
 
-   module.exports = router;
+router.post('/register', registerUser as RequestHandler);
+router.post('/login', loginUser as RequestHandler);
+router.get(
+  '/me',
+  authenticateToken as RequestHandler,
+  getCurrentUser as RequestHandler
+);
+
+export default router;
