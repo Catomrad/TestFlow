@@ -1,0 +1,240 @@
+.user-container {
+  max-width: 640px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.user-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.user-role {
+  font-size: 1.25rem;
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.user-error {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.projects-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.no-projects {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.project-card {
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.project-name {
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.project-meta {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.project-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.members-list {
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+  list-style: none;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.create-project-section,
+.invite-user-section {
+  margin-top: 2rem;
+}
+
+.form-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.edit-group {
+  flex: 1;
+}
+
+.invite-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.form-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #1f2937;
+  transition:
+    border-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.action-button {
+  padding: 0.5rem 1rem;
+  color: #ffffff;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 0.875rem;
+}
+
+.action-button:hover:not(.loading):not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.action-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.action-button.loading,
+.action-button:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.logout-button {
+  background-color: #ef4444;
+}
+
+.logout-button:hover:not(.loading):not(:disabled) {
+  background-color: #dc2626;
+}
+
+.create-button,
+.edit-button {
+  background-color: #3b82f6;
+}
+
+.create-button:hover:not(.loading):not(:disabled),
+.edit-button:hover:not(.loading):not(:disabled) {
+  background-color: #2563eb;
+}
+
+.invite-button,
+.select-button {
+  background-color: #10b981;
+}
+
+.invite-button:hover:not(.loading):not(:disabled),
+.select-button:hover:not(.loading):not(:disabled) {
+  background-color: #059669;
+}
+
+.select-button.selected {
+  background-color: #065f46;
+}
+
+.delete-button,
+.remove-button {
+  background-color: #ef4444;
+}
+
+.delete-button:hover:not(.loading):not(:disabled),
+.remove-button:hover:not(.loading):not(:disabled) {
+  background-color: #dc2626;
+}
+
+.leave-button,
+.cancel-button {
+  background-color: #f59e0b;
+}
+
+.leave-button:hover:not(.loading):not(:disabled),
+.cancel-button:hover:not(.loading):not(:disabled) {
+  background-color: #d97706;
+}
+
+@media (max-width: 480px) {
+  .user-container {
+    margin: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .project-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .form-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -11,7 +11,7 @@ import NewTest from './pages/New-test.js';
 import PrivateRoute from './components/PrivateRoute.tsx';
 import React from 'react';
 import Search from './pages/Search.js';
-import User from './pages/User.tsx';
+import User from './pages/UserPage.tsx';
 
 let PAGES = new Map([
   ['Главная', '/'],

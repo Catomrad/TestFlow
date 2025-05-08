@@ -11,39 +11,34 @@ const LoginPage: React.FC = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'user'>('user');
-  const [projectName, setProjectName] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       if (isRegister) {
-        await register(
-          username,
-          password,
-          role,
-          role === 'admin' ? projectName : undefined
-        );
+        await register(username, password);
       } else {
         await login(username, password);
       }
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred');
+      setError(err.message || 'Произошла ошибка');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="auth-container">
-      <h2 className="auth-title">
-        {isRegister ? 'Create Account' : 'Sign In'}
-      </h2>
+      <h2 className="auth-title">{isRegister ? 'Регистрация' : 'Вход'}</h2>
       {error && <p className="auth-error">{error}</p>}
       <form onSubmit={handleSubmit} className="auth-form">
         <div className="form-group">
           <label htmlFor="username" className="form-label">
-            Username
+            Имя пользователя
           </label>
           <input
             id="username"
@@ -53,11 +48,12 @@ const LoginPage: React.FC = () => {
             className="form-input"
             required
             aria-describedby="username-error"
+            disabled={isLoading}
           />
         </div>
         <div className="form-group">
           <label htmlFor="password" className="form-label">
-            Password
+            Пароль
           </label>
           <input
             id="password"
@@ -67,52 +63,31 @@ const LoginPage: React.FC = () => {
             className="form-input"
             required
             aria-describedby="password-error"
+            disabled={isLoading}
           />
         </div>
-        {isRegister && (
-          <>
-            <div className="form-group">
-              <label htmlFor="role" className="form-label">
-                Role
-              </label>
-              <select
-                id="role"
-                value={role}
-                onChange={e => setRole(e.target.value as 'admin' | 'user')}
-                className="form-input"
-              >
-                <option value="admin">Administrator</option>
-                <option value="user">User</option>
-              </select>
-            </div>
-            {role === 'admin' && (
-              <div className="form-group">
-                <label htmlFor="projectName" className="form-label">
-                  Project Name
-                </label>
-                <input
-                  id="projectName"
-                  type="text"
-                  value={projectName}
-                  onChange={e => setProjectName(e.target.value)}
-                  className="form-input"
-                  required
-                />
-              </div>
-            )}
-          </>
-        )}
-        <button type="submit" className="auth-button">
-          {isRegister ? 'Create Account' : 'Sign In'}
+        <button
+          type="submit"
+          className={`auth-button ${isLoading ? 'loading' : ''}`}
+          disabled={isLoading}
+          aria-label={isRegister ? 'Зарегистрироваться' : 'Войти'}
+        >
+          {isLoading
+            ? 'Загрузка...'
+            : isRegister
+              ? 'Зарегистрироваться'
+              : 'Войти'}
         </button>
       </form>
       <button
         onClick={() => setIsRegister(!isRegister)}
         className="auth-toggle"
+        disabled={isLoading}
+        aria-label={isRegister ? 'Перейти к входу' : 'Перейти к регистрации'}
       >
         {isRegister
-          ? 'Already have an account? Sign In'
-          : 'Need an account? Register'}
+          ? 'Уже есть аккаунт? Войти'
+          : 'Нет аккаунта? Зарегистрироваться'}
       </button>
     </div>
   );

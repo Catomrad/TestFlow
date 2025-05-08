@@ -1,41 +1,39 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { config } from 'dotenv';
 import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 interface UserPayload {
   id: number;
   role: string;
+  membershipRole?: string;
 }
 
-// Расширяем тип Request для включения пользователя
-declare global {
-  namespace Express {
-    interface Request {
-      user?: UserPayload;
-    }
-  }
+interface AuthRequest extends Request {
+  user?: UserPayload;
 }
 
-config();
+const authenticateToken = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader?.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-
-  jwt.verify(token, JWT_SECRET as string, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'Invalid token' });
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
     }
-    req.user = user as UserPayload;
+
+    const decoded = jwt.verify(token, JWT_SECRET) as UserPayload;
+    req.user = decoded;
     next();
-  });
+  } catch (error) {
+    console.error('Error in authenticateToken:', error);
+    res.status(403).json({ message: 'Invalid token' });
+  }
 };
 
 export { authenticateToken };

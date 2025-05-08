@@ -5,12 +5,13 @@ import axios from 'axios';
 interface User {
   id: number;
   username: string;
-  role: 'admin' | 'user';
+  role: string;
 }
 
 interface Project {
   id: number;
   name: string;
+  createdAt: string;
   members: {
     user: { id: number; username: string; role: string };
     role: string;
@@ -21,17 +22,22 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   projects: Project[];
+  currentProjectId: number | null;
   login: (username: string, password: string) => Promise<void>;
-  register: (
-    username: string,
-    password: string,
-    role: 'admin' | 'user',
-    projectName?: string
-  ) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => void;
   fetchProjects: () => Promise<void>;
   createProject: (name: string) => Promise<void>;
-  inviteUser: (projectId: number, username: string) => Promise<void>;
+  inviteMember: (
+    projectId: number,
+    username: string,
+    role: string
+  ) => Promise<void>;
+  removeMember: (projectId: number, userId: number) => Promise<void>;
+  leaveProject: (projectId: number) => Promise<void>;
+  updateProject: (projectId: number, name: string) => Promise<void>;
+  deleteProject: (projectId: number) => Promise<void>;
+  setCurrentProject: (projectId: number | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuth = async () => {
@@ -65,6 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(null);
         setIsAuthenticated(false);
         setProjects([]);
+        setCurrentProjectId(null);
       }
     }
     setIsLoading(false);
@@ -79,6 +87,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         headers: { Authorization: `Bearer ${token}` },
       });
       setProjects(response.data.projects);
+      if (
+        currentProjectId &&
+        !response.data.projects.some((p: Project) => p.id === currentProjectId)
+      ) {
+        setCurrentProjectId(null);
+      }
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     }
@@ -100,20 +114,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const inviteUser = async (projectId: number, username: string) => {
+  const inviteMember = async (
+    projectId: number,
+    username: string,
+    role: string
+  ) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No token');
 
     try {
       await axios.post(
-        'http://localhost:5000/api/projects/invite',
-        { projectId, username },
+        'http://localhost:5000/api/projects/invite-member',
+        { projectId, username, role },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchProjects();
     } catch (error) {
       throw new Error('Failed to invite user');
     }
+  };
+
+  const removeMember = async (projectId: number, userId: number) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+
+    try {
+      await axios.post(
+        'http://localhost:5000/api/projects/remove-member',
+        { projectId, userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchProjects();
+    } catch (error) {
+      throw new Error('Failed to remove member');
+    }
+  };
+
+  const leaveProject = async (projectId: number) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+
+    try {
+      await axios.post(
+        'http://localhost:5000/api/projects/leave',
+        { projectId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchProjects();
+    } catch (error) {
+      throw new Error('Failed to leave project');
+    }
+  };
+
+  const updateProject = async (projectId: number, name: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/projects/${projectId}`,
+        { name },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchProjects();
+    } catch (error) {
+      throw new Error('Failed to update project');
+    }
+  };
+
+  const deleteProject = async (projectId: number) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+
+    try {
+      await axios.delete(`http://localhost:5000/api/projects/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchProjects();
+    } catch (error) {
+      throw new Error('Failed to delete project');
+    }
+  };
+
+  const setCurrentProject = (projectId: number | null) => {
+    setCurrentProjectId(projectId);
   };
 
   useEffect(() => {
@@ -131,15 +215,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await fetchProjects();
   };
 
-  const register = async (
-    username: string,
-    password: string,
-    role: 'admin' | 'user',
-    projectName?: string
-  ) => {
+  const register = async (username: string, password: string) => {
     const response = await axios.post(
       'http://localhost:5000/api/auth/register',
-      { username, password, role, projectName }
+      {
+        username,
+        password,
+      }
     );
     localStorage.setItem('token', response.data.token);
     setUser(response.data.user);
@@ -152,6 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
     setIsAuthenticated(false);
     setProjects([]);
+    setCurrentProjectId(null);
   };
 
   if (isLoading) {
@@ -164,12 +247,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isAuthenticated,
         user,
         projects,
+        currentProjectId,
         login,
         register,
         logout,
         fetchProjects,
         createProject,
-        inviteUser,
+        inviteMember,
+        removeMember,
+        leaveProject,
+        updateProject,
+        deleteProject,
+        setCurrentProject,
       }}
     >
       {children}

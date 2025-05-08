@@ -1,13 +1,19 @@
 import {
   createProject,
+  deleteProject,
   getProjects,
-  inviteUser,
+  inviteMember,
+  leaveProject,
+  removeMember,
+  updateProject,
 } from '../controllers/projectController';
 import express, { RequestHandler } from 'express';
 
 import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
+
+console.log('Registering project routes...');
 
 router.get(
   '/',
@@ -20,9 +26,29 @@ router.post(
   createProject as RequestHandler
 );
 router.post(
-  '/invite',
+  '/invite-member',
   authenticateToken as RequestHandler,
-  inviteUser as RequestHandler
+  inviteMember as RequestHandler
+);
+router.post(
+  '/remove-member',
+  authenticateToken as RequestHandler,
+  removeMember as RequestHandler
+);
+router.post(
+  '/leave',
+  authenticateToken as RequestHandler,
+  leaveProject as RequestHandler
+);
+router.patch(
+  '/:id',
+  authenticateToken as RequestHandler,
+  updateProject as RequestHandler
+);
+router.delete(
+  '/:id',
+  authenticateToken as RequestHandler,
+  deleteProject as RequestHandler
 );
 
 export default router;
