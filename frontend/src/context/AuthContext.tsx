@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import axios from 'axios';
 
@@ -80,27 +86,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const checkAuth = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const response = await axios.get('http://localhost:5000/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(response.data.user);
-        setIsAuthenticated(true);
-        await fetchProjects();
-      } catch (error: any) {
-        localStorage.removeItem('token');
-        setUser(null);
-        setIsAuthenticated(false);
-        setProjects([]);
-        setCurrentProjectId(null);
-      }
+  const checkAuth = async (token: string) => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(response.data.user);
+      setIsAuthenticated(true);
+      await fetchProjects();
+    } catch (error: any) {
+      console.error('Failed to check auth:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
+      setProjects([]);
+      setCurrentProjectId(null);
     }
-    setIsLoading(false);
   };
 
   const fetchProjects = async () => {
@@ -121,6 +124,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error: any) {
       console.error('Failed to fetch projects:', error);
     }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token && !isInitialized) {
+      checkAuth(token).then(() => {
+        setIsInitialized(true);
+      });
+    } else {
+      setIsInitialized(true);
+    }
+  }, []); // Пустой массив зависимостей, чтобы запрос выполнялся только при монтировании
+
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/login',
+        {
+          username,
+          password,
+        }
+      );
+      localStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
+      setIsAuthenticated(true);
+      await fetchProjects();
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Login failed');
+    }
+  };
+
+  const register = async (username: string, password: string) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/register',
+        {
+          username,
+          password,
+        }
+      );
+      localStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
+      setIsAuthenticated(true);
+      await fetchProjects();
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Register failed');
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsAuthenticated(false);
+    setProjects([]);
+    setCurrentProjectId(null);
+    setIsInitialized(false);
   };
 
   const createProject = async (name: string) => {
@@ -287,70 +346,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setCurrentProjectId(projectId);
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const value = useMemo(
+    () => ({
+      isAuthenticated,
+      user,
+      projects,
+      currentProjectId,
+      login,
+      register,
+      logout,
+      fetchProjects,
+      createProject,
+      createTestPlan,
+      createTestCase,
+      inviteMember,
+      removeMember,
+      leaveProject,
+      updateProject,
+      deleteProject,
+      setCurrentProject,
+    }),
+    [isAuthenticated, user, projects, currentProjectId]
+  );
 
-  const login = async (username: string, password: string) => {
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
-      username,
-      password,
-    });
-    localStorage.setItem('token', response.data.token);
-    setUser(response.data.user);
-    setIsAuthenticated(true);
-    await fetchProjects();
-  };
-
-  const register = async (username: string, password: string) => {
-    const response = await axios.post(
-      'http://localhost:5000/api/auth/register',
-      {
-        username,
-        password,
-      }
-    );
-    localStorage.setItem('token', response.data.token);
-    setUser(response.data.user);
-    setIsAuthenticated(true);
-    await fetchProjects();
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    setIsAuthenticated(false);
-    setProjects([]);
-    setCurrentProjectId(null);
-  };
-
-  if (isLoading) {
+  if (!isInitialized) {
     return <div>Loading...</div>;
   }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        user,
-        projects,
-        currentProjectId,
-        login,
-        register,
-        logout,
-        fetchProjects,
-        createProject,
-        createTestPlan,
-        createTestCase,
-        inviteMember,
-        removeMember,
-        leaveProject,
-        updateProject,
-        deleteProject,
-        setCurrentProject,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

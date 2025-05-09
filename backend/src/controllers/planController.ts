@@ -5,23 +5,8 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const createTestPlan = async (req: Request, res: Response) => {
+  const { name, description, projectId, creatorId } = req.body;
   try {
-    const { name, description, projectId, creatorId } = req.body;
-
-    if (!name || !projectId || !creatorId) {
-      return res
-        .status(400)
-        .json({ message: 'Name, projectId, and creatorId are required' });
-    }
-
-    // Проверка доступа к проекту
-    const projectMember = await prisma.projectMember.findFirst({
-      where: { projectId, userId: creatorId },
-    });
-    if (!projectMember) {
-      return res.status(403).json({ message: 'User is not a project member' });
-    }
-
     const testPlan = await prisma.testPlan.create({
       data: {
         name,
@@ -30,12 +15,52 @@ const createTestPlan = async (req: Request, res: Response) => {
         creatorId,
       },
     });
-
     res.status(201).json({ testPlan });
-  } catch (error: any) {
-    console.error('Error in createTestPlan:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create test plan' });
   }
 };
 
-export { createTestPlan };
+const getAllTestPlans = async (req: Request, res: Response) => {
+  try {
+    const testPlans = await prisma.testPlan.findMany();
+    res.status(200).json({ testPlans });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch test plans' });
+  }
+};
+
+const getTestPlanById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const testPlan = await prisma.testPlan.findUnique({
+      where: { id },
+    });
+    if (!testPlan) {
+      return res.status(404).json({ message: 'Test plan not found' });
+    }
+    res.status(200).json({ testPlan });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch test plan' });
+  }
+};
+
+const editTestPlan = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, description, projectId } = req.body;
+  try {
+    const testPlan = await prisma.testPlan.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        projectId,
+      },
+    });
+    res.status(200).json({ testPlan });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update test plan' });
+  }
+};
+
+export { createTestPlan, getAllTestPlans, getTestPlanById, editTestPlan };

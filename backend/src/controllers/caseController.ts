@@ -4,41 +4,51 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const createTestCase = async (req: Request, res: Response) => {
+const getAllTestCases = async (req: Request, res: Response) => {
   try {
-    const {
-      title,
-      priority,
-      class: testCaseClass,
-      module,
-      status,
-      template,
-      requiredTime,
-      content,
-      description,
-      projectId,
-      creatorId,
-    } = req.body;
+    const testCases = await prisma.testCase.findMany();
+    res.status(200).json({ testCases });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch test cases' });
+  }
+};
 
-    if (!title || !projectId || !creatorId) {
-      return res
-        .status(400)
-        .json({ message: 'Title, projectId, and creatorId are required' });
-    }
-
-    // Проверка доступа к проекту
-    const projectMember = await prisma.projectMember.findFirst({
-      where: { projectId, userId: creatorId },
+const getTestCaseById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const testCase = await prisma.testCase.findUnique({
+      where: { id },
     });
-    if (!projectMember) {
-      return res.status(403).json({ message: 'User is not a project member' });
+    if (!testCase) {
+      return res.status(404).json({ message: 'Test case not found' });
     }
+    res.status(200).json({ testCase });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch test case' });
+  }
+};
 
-    const testCase = await prisma.testCase.create({
+const editTestCase = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const {
+    title,
+    priority,
+    class: className,
+    module,
+    status,
+    template,
+    requiredTime,
+    content,
+    description,
+    projectId,
+  } = req.body;
+  try {
+    const testCase = await prisma.testCase.update({
+      where: { id },
       data: {
         title,
         priority,
-        class: testCaseClass,
+        class: className,
         module,
         status,
         template,
@@ -46,15 +56,12 @@ const createTestCase = async (req: Request, res: Response) => {
         content,
         description,
         projectId,
-        creatorId,
       },
     });
-
-    res.status(201).json({ testCase });
-  } catch (error: any) {
-    console.error('Error in createTestCase:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(200).json({ testCase });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update test case' });
   }
 };
 
-export { createTestCase };
+export { getAllTestCases, getTestCaseById, editTestCase };
