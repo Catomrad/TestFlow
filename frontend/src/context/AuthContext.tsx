@@ -18,6 +18,25 @@ interface Project {
   }[];
 }
 
+interface TestCaseForm {
+  title: string;
+  priority: string;
+  class: string;
+  module: string;
+  status: string;
+  template: string;
+  requiredTime: {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
+  content: string;
+  description: string;
+  projectId: number;
+  creatorId: number;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
@@ -28,6 +47,12 @@ interface AuthContextType {
   logout: () => void;
   fetchProjects: () => Promise<void>;
   createProject: (name: string) => Promise<void>;
+  createTestPlan: (
+    name: string,
+    description: string,
+    projectId: number
+  ) => Promise<void>;
+  createTestCase: (testCase: TestCaseForm) => Promise<void>;
   inviteMember: (
     projectId: number,
     username: string,
@@ -67,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(response.data.user);
         setIsAuthenticated(true);
         await fetchProjects();
-      } catch (error) {
+      } catch (error: any) {
         localStorage.removeItem('token');
         setUser(null);
         setIsAuthenticated(false);
@@ -93,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       ) {
         setCurrentProjectId(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch projects:', error);
     }
   };
@@ -109,8 +134,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchProjects();
-    } catch (error) {
-      throw new Error('Failed to create project');
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to create project'
+      );
+    }
+  };
+
+  const createTestPlan = async (
+    name: string,
+    description: string,
+    projectId: number
+  ) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+    if (!user) throw new Error('No user');
+
+    try {
+      await axios.post(
+        'http://localhost:5000/api/test-plan/new',
+        { name, description, projectId, creatorId: user.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to create test plan'
+      );
+    }
+  };
+
+  const createTestCase = async (testCase: TestCaseForm) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+    if (!user) throw new Error('No user');
+
+    try {
+      await axios.post(
+        'http://localhost:5000/api/test-case/new',
+        {
+          title: testCase.title,
+          priority: testCase.priority,
+          class: testCase.class,
+          module: testCase.module,
+          status: testCase.status,
+          template: testCase.template,
+          requiredTime: testCase.requiredTime,
+          content: testCase.content,
+          description: testCase.description,
+          projectId: testCase.projectId,
+          creatorId: user.id,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to create test case'
+      );
     }
   };
 
@@ -129,8 +208,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchProjects();
-    } catch (error) {
-      throw new Error('Failed to invite user');
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to invite user');
     }
   };
 
@@ -145,8 +224,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchProjects();
-    } catch (error) {
-      throw new Error('Failed to remove member');
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to remove member'
+      );
     }
   };
 
@@ -161,8 +242,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchProjects();
-    } catch (error) {
-      throw new Error('Failed to leave project');
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to leave project'
+      );
     }
   };
 
@@ -177,8 +260,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchProjects();
-    } catch (error) {
-      throw new Error('Failed to update project');
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to update project'
+      );
     }
   };
 
@@ -191,8 +276,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchProjects();
-    } catch (error) {
-      throw new Error('Failed to delete project');
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to delete project'
+      );
     }
   };
 
@@ -253,6 +340,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         logout,
         fetchProjects,
         createProject,
+        createTestPlan,
+        createTestCase,
         inviteMember,
         removeMember,
         leaveProject,

@@ -13,7 +13,7 @@ import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-console.log('Registering project routes...');
+// console.log('Registering project routes...');
 
 router.get(
   '/',

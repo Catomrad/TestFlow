@@ -35,6 +35,10 @@ model Project {
   members    ProjectMember[] @relation("ProjectMembers")
   testPlans  TestPlan[]      @relation("ProjectTestPlans")
   flowcharts Flowchart[]     @relation("ProjectFlowcharts")
+
+  TestPlan TestPlan[]
+
+  TestCase TestCase[]
 }
 
 model ProjectMember {
@@ -49,24 +53,34 @@ model ProjectMember {
 }
 
 model TestPlan {
-  id        Int        @id @default(autoincrement())
-  name      String
-  createdAt DateTime   @default(now())
-  projectId Int
-  userId    Int
-  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade, name: "ProjectTestPlans")
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testCases TestCase[]
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  projectId   Int
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creatorId   Int?
+  creator     User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  Project Project[] @relation("ProjectTestPlans")
 }
 
 model TestCase {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  planId    Int
-  userId    Int
-  plan      TestPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid())
+  title        String
+  priority     String
+  class        String
+  module       String
+  status       String
+  template     String
+  requiredTime Json
+  content      String
+  description  String
+  projectId    Int
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creatorId    Int?
+  creator      User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
 }
 
 model Flowchart {
