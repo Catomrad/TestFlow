@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -23,7 +20,7 @@ model User {
   testPlans   TestPlan[]
   testCases   TestCase[]
   flowcharts  Flowchart[]
-  Project     Project[]
+  projects    Project[]       @relation("ProjectCreator")
 }
 
 model Project {
@@ -31,14 +28,12 @@ model Project {
   name       String
   createdAt  DateTime        @default(now())
   creatorId  Int?
-  creator    User?           @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  creator    User?           @relation(fields: [creatorId], references: [id], onDelete: SetNull, name: "ProjectCreator")
   members    ProjectMember[] @relation("ProjectMembers")
-  testPlans  TestPlan[]      @relation("ProjectTestPlans")
+  testPlans  TestPlan[]
+  testCases  TestCase[]
   flowcharts Flowchart[]     @relation("ProjectFlowcharts")
-
-  TestPlan TestPlan[]
-
-  TestCase TestCase[]
+  modules    Module[]
 }
 
 model ProjectMember {
@@ -52,35 +47,54 @@ model ProjectMember {
   @@unique([userId, projectId])
 }
 
-model TestPlan {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  projectId   Int
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  creatorId   Int?
-  creator     User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
+model Module {
+  id        Int       @id @default(autoincrement())
+  name      String
+  projectId Int
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCases TestCase[]
+}
 
-  Project Project[] @relation("ProjectTestPlans")
+model TestPlan {
+  id              String           @id @default(uuid())
+  name            String
+  description     String
+  softwareVersion String?
+  projectId       Int
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creatorId       Int?
+  creator         User?            @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  testCases       TestPlanTestCase[]
 }
 
 model TestCase {
-  id           String   @id @default(uuid())
+  id           String           @id @default(uuid())
   title        String
   priority     String
   class        String
-  module       String
+  moduleId     Int
+  module       Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   status       String
   template     String
   requiredTime Json
   content      String
   description  String
   projectId    Int
-  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   creatorId    Int?
-  creator      User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-  createdAt    DateTime @default(now())
+  creator      User?            @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+  testPlans    TestPlanTestCase[]
+}
+
+model TestPlanTestCase {
+  testPlanId String
+  testCaseId String
+  testPlan   TestPlan @relation(fields: [testPlanId], references: [id], onDelete: Cascade)
+  testCase   TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@id([testPlanId, testCaseId])
 }
 
 model Flowchart {

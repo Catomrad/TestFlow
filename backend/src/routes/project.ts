@@ -1,6 +1,7 @@
 import {
   createProject,
   deleteProject,
+  getProjectById,
   getProjects,
   inviteMember,
   leaveProject,
@@ -14,7 +15,11 @@ import { authenticateToken } from '../middleware/authMiddleware';
 const router = express.Router();
 
 // console.log('Registering project routes...');
-
+router.get(
+  '/:id',
+  authenticateToken as RequestHandler,
+  getProjectById as RequestHandler
+);
 router.get(
   '/',
   authenticateToken as RequestHandler,

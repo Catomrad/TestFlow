@@ -1,5 +1,6 @@
 import {
   createTestPlan,
+  deleteTestPlan,
   editTestPlan,
   getAllTestPlans,
   getTestPlanById,
@@ -29,6 +30,11 @@ router.patch(
   '/edit/:id',
   authenticateToken as RequestHandler,
   editTestPlan as RequestHandler
+);
+router.delete(
+  '/:id',
+  authenticateToken as RequestHandler,
+  deleteTestPlan as RequestHandler
 );
 
 export default router;

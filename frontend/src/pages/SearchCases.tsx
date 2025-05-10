@@ -5,12 +5,18 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
 
+interface Module {
+  id: number;
+  name: string;
+}
+
 interface TestCase {
   id: string;
   title: string;
   priority: string;
   class: string;
-  module: string;
+  moduleId: number;
+  module: { name: string };
   status: string;
   template: string;
   requiredTime: {
@@ -20,18 +26,21 @@ interface TestCase {
     seconds: number;
   };
   projectId: number;
+  project: { name: string };
   creatorId: number;
+  creator: { username: string };
 }
 
 const SearchCases: React.FC = () => {
-  const { user } = useAuth();
+  const { user, projects } = useAuth();
   const navigate = useNavigate();
   const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
   const [filters, setFilters] = useState({
     title: '',
     priority: '',
     class: '',
-    module: '',
+    moduleId: '',
     status: '',
     template: '',
     projectId: '',
@@ -44,6 +53,7 @@ const SearchCases: React.FC = () => {
       return;
     }
     fetchTestCases();
+    fetchModules();
   }, [user]);
 
   const fetchTestCases = async () => {
@@ -61,6 +71,21 @@ const SearchCases: React.FC = () => {
     }
   };
 
+  const fetchModules = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/module', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch modules');
+      const data = await response.json();
+      setModules(data.modules);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch modules');
+    }
+  };
+
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -74,7 +99,7 @@ const SearchCases: React.FC = () => {
         tc.title.toLowerCase().includes(filters.title.toLowerCase())) &&
       (filters.priority === '' || tc.priority === filters.priority) &&
       (filters.class === '' || tc.class === filters.class) &&
-      (filters.module === '' || tc.module === filters.module) &&
+      (filters.moduleId === '' || tc.moduleId === parseInt(filters.moduleId)) &&
       (filters.status === '' || tc.status === filters.status) &&
       (filters.template === '' || tc.template === filters.template) &&
       (filters.projectId === '' || tc.projectId === parseInt(filters.projectId))
@@ -133,17 +158,19 @@ const SearchCases: React.FC = () => {
           </select>
         </div>
         <div className="form-group">
-          <label htmlFor="module">Модуль</label>
+          <label htmlFor="moduleId">Модуль</label>
           <select
-            id="module"
-            name="module"
-            value={filters.module}
+            id="moduleId"
+            name="moduleId"
+            value={filters.moduleId}
             onChange={handleFilterChange}
           >
             <option value="">Все</option>
-            <option value="auth">Аутентификация</option>
-            <option value="payment">Платежи</option>
-            <option value="dashboard">Дашборд</option>
+            {modules.map(module => (
+              <option key={module.id} value={module.id}>
+                {module.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className="form-group">
@@ -175,14 +202,19 @@ const SearchCases: React.FC = () => {
         </div>
         <div className="form-group">
           <label htmlFor="projectId">Проект</label>
-          <input
-            type="number"
+          <select
             id="projectId"
             name="projectId"
             value={filters.projectId}
             onChange={handleFilterChange}
-            placeholder="ID проекта"
-          />
+          >
+            <option value="">Все</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
       <table className="search-table">
@@ -195,8 +227,8 @@ const SearchCases: React.FC = () => {
             <th>Статус</th>
             <th>Шаблон</th>
             <th>Требуемое время</th>
-            <th>Проект ID</th>
-            <th>Создатель ID</th>
+            <th>Проект</th>
+            <th>Создатель</th>
           </tr>
         </thead>
         <tbody>
@@ -209,15 +241,15 @@ const SearchCases: React.FC = () => {
               <td>{tc.title}</td>
               <td>{tc.priority}</td>
               <td>{tc.class}</td>
-              <td>{tc.module}</td>
+              <td>{tc.module.name}</td>
               <td>{tc.status}</td>
               <td>{tc.template}</td>
               <td>
                 {tc.requiredTime.days}d {tc.requiredTime.hours}h{' '}
                 {tc.requiredTime.minutes}m {tc.requiredTime.seconds}s
               </td>
-              <td>{tc.projectId}</td>
-              <td>{tc.creatorId}</td>
+              <td>{tc.project.name}</td>
+              <td>{tc.creator.username}</td>
             </tr>
           ))}
         </tbody>

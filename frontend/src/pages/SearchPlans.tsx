@@ -8,12 +8,16 @@ import { useNavigate } from 'react-router-dom';
 interface TestPlan {
   id: string;
   name: string;
+  softwareVersion?: string;
   projectId: number;
+  project: { name: string };
   creatorId: number;
+  creator: { username: string };
+  testCases: { testCase: { id: string } }[];
 }
 
 const SearchPlans: React.FC = () => {
-  const { user } = useAuth();
+  const { user, projects } = useAuth();
   const navigate = useNavigate();
   const [testPlans, setTestPlans] = useState<TestPlan[]>([]);
   const [filters, setFilters] = useState({
@@ -85,22 +89,29 @@ const SearchPlans: React.FC = () => {
         </div>
         <div className="form-group">
           <label htmlFor="projectId">Проект</label>
-          <input
-            type="number"
+          <select
             id="projectId"
             name="projectId"
             value={filters.projectId}
             onChange={handleFilterChange}
-            placeholder="ID проекта"
-          />
+          >
+            <option value="">Все</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
       <table className="search-table">
         <thead>
           <tr>
             <th>Название</th>
-            <th>Проект ID</th>
-            <th>Создатель ID</th>
+            <th>Версия ПО</th>
+            <th>Тест-кейсы</th>
+            <th>Проект</th>
+            <th>Создатель</th>
           </tr>
         </thead>
         <tbody>
@@ -111,8 +122,10 @@ const SearchPlans: React.FC = () => {
               style={{ cursor: 'pointer' }}
             >
               <td>{tp.name}</td>
-              <td>{tp.projectId}</td>
-              <td>{tp.creatorId}</td>
+              <td>{tp.softwareVersion || 'Не указана'}</td>
+              <td>{tp.testCases.length}</td>
+              <td>{tp.project.name}</td>
+              <td>{tp.creator.username}</td>
             </tr>
           ))}
         </tbody>

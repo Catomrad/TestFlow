@@ -28,7 +28,7 @@ interface TestCaseForm {
   title: string;
   priority: string;
   class: string;
-  module: string;
+  moduleId: number;
   status: string;
   template: string;
   requiredTime: {
@@ -56,7 +56,9 @@ interface AuthContextType {
   createTestPlan: (
     name: string,
     description: string,
-    projectId: number
+    projectId: number,
+    softwareVersion?: string,
+    testCaseIds?: string[]
   ) => Promise<void>;
   createTestCase: (testCase: TestCaseForm) => Promise<void>;
   inviteMember: (
@@ -135,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } else {
       setIsInitialized(true);
     }
-  }, []); // Пустой массив зависимостей, чтобы запрос выполнялся только при монтировании
+  }, []);
 
   const login = async (username: string, password: string) => {
     try {
@@ -203,7 +205,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const createTestPlan = async (
     name: string,
     description: string,
-    projectId: number
+    projectId: number,
+    softwareVersion?: string,
+    testCaseIds?: string[]
   ) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No token');
@@ -212,7 +216,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await axios.post(
         'http://localhost:5000/api/test-plan/new',
-        { name, description, projectId, creatorId: user.id },
+        {
+          name,
+          description,
+          softwareVersion,
+          projectId,
+          creatorId: user.id,
+          testCaseIds,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (error: any) {
@@ -234,7 +245,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           title: testCase.title,
           priority: testCase.priority,
           class: testCase.class,
-          module: testCase.module,
+          moduleId: testCase.moduleId,
           status: testCase.status,
           template: testCase.template,
           requiredTime: testCase.requiredTime,

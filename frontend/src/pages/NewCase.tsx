@@ -1,14 +1,19 @@
 import '../styles/TestCase.css';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useAuth } from '../context/AuthContext.tsx';
+
+interface Module {
+  id: number;
+  name: string;
+}
 
 interface TestCaseForm {
   title: string;
   priority: string;
   class: string;
-  module: string;
+  moduleId: number;
   status: string;
   template: string;
   requiredTime: {
@@ -28,7 +33,7 @@ const NewTest: React.FC = () => {
     title: '',
     priority: '',
     class: '',
-    module: '',
+    moduleId: 0,
     status: '',
     template: '',
     requiredTime: { days: 0, hours: 0, minutes: 0, seconds: 0 },
@@ -36,8 +41,36 @@ const NewTest: React.FC = () => {
     description: '',
     projectId: currentProjectId || 0,
   });
+  const [modules, setModules] = useState<Module[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (formData.projectId) {
+      fetchModules(formData.projectId);
+    } else {
+      setModules([]);
+      setFormData(prev => ({ ...prev, moduleId: 0 }));
+    }
+  }, [formData.projectId]);
+
+  const fetchModules = async (projectId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/module?projectId=${projectId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch modules');
+      const data = await response.json();
+      setModules(data.modules);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch modules');
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -47,7 +80,9 @@ const NewTest: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'projectId' ? parseInt(value) : value,
+      [name]:
+        name === 'projectId' || name === 'moduleId' ? parseInt(value) : value,
+      ...(name === 'projectId' ? { moduleId: 0 } : {}), // Сбрасываем moduleId при смене проекта
     }));
   };
 
@@ -77,10 +112,12 @@ const NewTest: React.FC = () => {
       setError('Title is required.');
       return;
     }
+    if (!formData.moduleId) {
+      setError('Please select a module.');
+      return;
+    }
 
     const testCaseData = { ...formData, creatorId: user.id };
-    console.log('Sending test case data:', testCaseData);
-
     try {
       await createTestCase(testCaseData);
       setSuccess('Test case created successfully!');
@@ -88,7 +125,7 @@ const NewTest: React.FC = () => {
         title: '',
         priority: '',
         class: '',
-        module: '',
+        moduleId: 0,
         status: '',
         template: '',
         requiredTime: { days: 0, hours: 0, minutes: 0, seconds: 0 },
@@ -117,6 +154,42 @@ const NewTest: React.FC = () => {
             placeholder="Введите название тест-кейса"
           />
         </div>
+        <div className="form-group">
+          <label htmlFor="projectId">Проект</label>
+          <select
+            name="projectId"
+            id="projectId"
+            value={formData.projectId}
+            onChange={handleChange}
+            required
+            disabled={!!currentProjectId}
+          >
+            <option value={0}>Выберите проект</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="moduleId">Модуль</label>
+          <select
+            id="moduleId"
+            name="moduleId"
+            value={formData.moduleId}
+            onChange={handleChange}
+            required
+            disabled={!formData.projectId}
+          >
+            <option value={0}>Выберите модуль</option>
+            {modules.map(module => (
+              <option key={module.id} value={module.id}>
+                {module.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="row">
           <div className="form-group">
             <label htmlFor="priority">Приоритет</label>
@@ -144,20 +217,6 @@ const NewTest: React.FC = () => {
               <option value="functional">Функциональный</option>
               <option value="ui">UI</option>
               <option value="integration">Интеграционный</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="module">Модуль</label>
-            <select
-              id="module"
-              name="module"
-              value={formData.module}
-              onChange={handleChange}
-            >
-              <option value="">Выберите модуль</option>
-              <option value="auth">Аутентификация</option>
-              <option value="payment">Платежи</option>
-              <option value="dashboard">Дашборд</option>
             </select>
           </div>
           <div className="form-group">
@@ -234,24 +293,6 @@ const NewTest: React.FC = () => {
               <span>S</span>
             </div>
           </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="projectId">Проект</label>
-          <select
-            name="projectId"
-            id="projectId"
-            value={formData.projectId}
-            onChange={handleChange}
-            required
-            disabled={!!currentProjectId}
-          >
-            <option value={0}>Выберите проект</option>
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
         </div>
         <div className="form-group">
           <label htmlFor="content">Содержание</label>

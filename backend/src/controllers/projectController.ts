@@ -13,7 +13,31 @@ interface UserPayload {
 interface AuthRequest extends Request {
   user?: UserPayload;
 }
-
+const getProjectById = async (req: AuthRequest, res: Response) => {
+  try {
+    const projectId = parseInt(req.params.id);
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: { id: true, username: true, role: true },
+            },
+          },
+        },
+      },
+    });
+    res.json({ project });
+  } catch (error) {
+    console.error('Error in getProjectById:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 const getProjects = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -339,6 +363,7 @@ const deleteProject = async (req: AuthRequest, res: Response) => {
 };
 
 export {
+  getProjectById,
   getProjects,
   createProject,
   inviteMember,

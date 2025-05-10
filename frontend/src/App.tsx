@@ -8,9 +8,11 @@ import CaseDetail from './pages/CaseDetail.tsx';
 import Home from './pages/Home.js';
 import LoginPage from './pages/LoginPage.tsx';
 import NewPlan from './pages/NewPlan.tsx';
-import NewTest from './pages/NewTest.tsx';
+import NewTest from './pages/NewCase.tsx';
 import PlanDetail from './pages/PlanDetail.tsx';
 import PrivateRoute from './components/PrivateRoute.tsx';
+import ProjectDetail from './pages/ProjectDetail.tsx';
+import Projects from './pages/Projects.tsx';
 import React from 'react';
 import Search from './pages/Search.js';
 import SearchCases from './pages/SearchCases.tsx';
@@ -46,6 +48,7 @@ const PAGES = new Map<string, PageValue>([
       ],
     },
   ],
+  ['Проекты', '/projects'],
   ['Тестирование', '/'],
   ['Пользователь', '/user'],
 ]);
@@ -124,6 +127,8 @@ function App() {
               <Route path="/search/plans" element={<SearchPlans />} />
               <Route path="/case/:id" element={<CaseDetail />} />
               <Route path="/plan/:id" element={<PlanDetail />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/project/:id" element={<ProjectDetail />} />
             </Route>
           </Routes>
           <MyFooter />

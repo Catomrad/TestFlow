@@ -5,12 +5,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext.tsx';
 
+interface Module {
+  id: number;
+  name: string;
+}
+
 interface TestCase {
   id: string;
   title: string;
   priority: string;
   class: string;
-  module: string;
+  moduleId: number;
+  module: { name: string };
   status: string;
   template: string;
   requiredTime: {
@@ -22,15 +28,18 @@ interface TestCase {
   content: string;
   description: string;
   projectId: number;
+  project: { name: string };
   creatorId: number;
+  creator: { username: string };
 }
 
 const CaseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, projects } = useAuth();
   const navigate = useNavigate();
   const [testCase, setTestCase] = useState<TestCase | null>(null);
   const [formData, setFormData] = useState<TestCase | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -57,8 +66,27 @@ const CaseDetail: React.FC = () => {
       const data = await response.json();
       setTestCase(data.testCase);
       setFormData(data.testCase);
+      fetchModules(data.testCase.projectId);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch test case');
+    }
+  };
+
+  const fetchModules = async (projectId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/module?projectId=${projectId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch modules');
+      const data = await response.json();
+      setModules(data.modules);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch modules');
     }
   };
 
@@ -72,7 +100,10 @@ const CaseDetail: React.FC = () => {
       prev
         ? {
             ...prev,
-            [name]: name === 'projectId' ? parseInt(value) : value,
+            [name]:
+              name === 'projectId' || name === 'moduleId'
+                ? parseInt(value)
+                : value,
           }
         : null
     );
@@ -103,7 +134,18 @@ const CaseDetail: React.FC = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            title: formData.title,
+            priority: formData.priority,
+            class: formData.class,
+            moduleId: formData.moduleId,
+            status: formData.status,
+            template: formData.template,
+            requiredTime: formData.requiredTime,
+            content: formData.content,
+            description: formData.description,
+            projectId: formData.projectId,
+          }),
         }
       );
       if (!response.ok) throw new Error('Failed to update test case');
@@ -112,6 +154,29 @@ const CaseDetail: React.FC = () => {
       fetchTestCase();
     } catch (err: any) {
       setError(err.message || 'Failed to update test case');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    if (!window.confirm('Are you sure you want to delete this test case?'))
+      return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/test-case/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error('Failed to delete test case');
+      setSuccess('Test case deleted successfully!');
+      navigate('/search/cases');
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete test case');
     }
   };
 
@@ -170,17 +235,20 @@ const CaseDetail: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="module">Модуль</label>
+              <label htmlFor="moduleId">Модуль</label>
               <select
-                id="module"
-                name="module"
-                value={formData.module}
+                id="moduleId"
+                name="moduleId"
+                value={formData.moduleId}
                 onChange={handleChange}
+                required
               >
-                <option value="">Выберите модуль</option>
-                <option value="auth">Аутентификация</option>
-                <option value="payment">Платежи</option>
-                <option value="dashboard">Дашборд</option>
+                <option value={0}>Выберите модуль</option>
+                {modules.map(module => (
+                  <option key={module.id} value={module.id}>
+                    {module.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-group">
@@ -260,14 +328,20 @@ const CaseDetail: React.FC = () => {
           </div>
           <div className="form-group">
             <label htmlFor="projectId">Проект</label>
-            <input
-              type="number"
+            <select
               id="projectId"
               name="projectId"
               value={formData.projectId}
               onChange={handleChange}
               required
-            />
+            >
+              <option value={0}>Выберите проект</option>
+              {projects.map(project => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label htmlFor="content">Содержание</label>
@@ -308,7 +382,7 @@ const CaseDetail: React.FC = () => {
             <strong>Класс:</strong> {testCase.class}
           </p>
           <p>
-            <strong>Модуль:</strong> {testCase.module}
+            <strong>Модуль:</strong> {testCase.module.name}
           </p>
           <p>
             <strong>Статус:</strong> {testCase.status}
@@ -322,10 +396,10 @@ const CaseDetail: React.FC = () => {
             {testCase.requiredTime.seconds}s
           </p>
           <p>
-            <strong>Проект ID:</strong> {testCase.projectId}
+            <strong>Проект:</strong> {testCase.project.name}
           </p>
           <p>
-            <strong>Создатель ID:</strong> {testCase.creatorId}
+            <strong>Создатель:</strong> {testCase.creator.username}
           </p>
           <p>
             <strong>Содержание:</strong> {testCase.content}
@@ -334,6 +408,7 @@ const CaseDetail: React.FC = () => {
             <strong>Описание:</strong> {testCase.description}
           </p>
           <button onClick={() => setIsEditing(true)}>Редактировать</button>
+          <button onClick={handleDelete}>Удалить</button>
           <button onClick={() => navigate('/search/cases')}>Назад</button>
         </div>
       )}
