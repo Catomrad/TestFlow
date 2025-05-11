@@ -1,5 +1,4 @@
-#testCaseForm,
-.test-case-container {
+#testPlanForm, .test-plan-container {
   max-width: 960px;
   margin: 40px auto;
   padding: 24px;
@@ -9,7 +8,7 @@
   font-family: 'Inter', sans-serif;
 }
 
-.test-case-container h2 {
+.test-plan-container h2 {
   font-size: 1.75rem;
   font-weight: 600;
   color: #1a192b;
@@ -28,8 +27,7 @@
   margin-bottom: 8px;
 }
 
-.form-group input[type='text'],
-.form-group input[type='number'],
+.form-group input[type="text"],
 .form-group select,
 .form-group textarea {
   width: 100%;
@@ -39,9 +37,12 @@
   border-radius: 6px;
   background: #ffffff;
   color: #1a192b;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group select[multiple] {
+  height: 120px;
+  padding: 8px;
 }
 
 .form-group input:focus,
@@ -55,45 +56,6 @@
 .form-group textarea {
   min-height: 120px;
   resize: vertical;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.row .form-group {
-  flex: 1;
-  min-width: 200px;
-}
-
-.required-time {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.time {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.input-time {
-  width: 60px;
-  padding: 8px;
-  font-size: 0.875rem;
-  text-align: center;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-}
-
-.time span {
-  font-size: 0.875rem;
-  color: #6b7280;
 }
 
 button {
@@ -113,11 +75,11 @@ button:hover {
   background: #2d2c4a;
 }
 
-button[type='button'] {
+button[type="button"] {
   background: #6b7280;
 }
 
-button[type='button']:hover {
+button[type="button"]:hover {
   background: #4b5563;
 }
 
@@ -135,29 +97,35 @@ button[type='button']:hover {
   color: #16a34a;
 }
 
-.test-case-container p {
+.test-plan-container p {
   font-size: 0.875rem;
   color: #374151;
   margin-bottom: 12px;
 }
 
-.test-case-container p strong {
+.test-plan-container p strong {
   font-weight: 600;
   color: #1a192b;
 }
 
+.test-plan-container ul {
+  list-style: disc;
+  margin: 12px 0 24px 20px;
+}
+
+.test-plan-container ul li {
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
 @media (max-width: 768px) {
-  #testCaseForm,
-  .test-case-container {
+  #testPlanForm, .test-plan-container {
     margin: 20px;
     padding: 16px;
   }
 
-  .row {
-    flex-direction: column;
-  }
-
-  .row .form-group {
-    min-width: 100%;
+  .form-group select[multiple] {
+    height: 100px;
   }
 }

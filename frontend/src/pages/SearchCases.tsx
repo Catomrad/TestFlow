@@ -1,4 +1,4 @@
-import '../styles/Search.css';
+import '../styles/SearchCase.css';
 
 import React, { useEffect, useState } from 'react';
 
@@ -49,7 +49,7 @@ const SearchCases: React.FC = () => {
 
   useEffect(() => {
     if (!user) {
-      setError('You must be logged in to view test cases.');
+      setError('Вы должны быть авторизованы для просмотра тест-кейсов.');
       return;
     }
     fetchTestCases();
@@ -63,11 +63,11 @@ const SearchCases: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch test cases');
+      if (!response.ok) throw new Error('Не удалось загрузить тест-кейсы');
       const data = await response.json();
       setTestCases(data.testCases);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch test cases');
+      setError(err.message || 'Не удалось загрузить тест-кейсы');
     }
   };
 
@@ -78,11 +78,11 @@ const SearchCases: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch modules');
+      if (!response.ok) throw new Error('Не удалось загрузить модули');
       const data = await response.json();
       setModules(data.modules);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch modules');
+      setError(err.message || 'Не удалось загрузить модули');
     }
   };
 
@@ -110,25 +110,32 @@ const SearchCases: React.FC = () => {
     navigate(`/case/${id}`);
   };
 
+  const handleCreateNewCase = () => {
+    navigate('/case/new');
+  };
+
+  const handleBack = () => {
+    navigate('/');
+  };
+
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
+    return <p className="error-message">{error}</p>;
   }
 
   return (
     <div className="search-container">
-      <h2>Поиск тест-кейсов</h2>
+      <div className="form-group">
+        <label htmlFor="title">Название</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          value={filters.title}
+          onChange={handleFilterChange}
+          placeholder="Введите название"
+        />
+      </div>
       <div className="filters">
-        <div className="form-group">
-          <label htmlFor="title">Название</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={filters.title}
-            onChange={handleFilterChange}
-            placeholder="Введите название"
-          />
-        </div>
         <div className="form-group">
           <label htmlFor="priority">Приоритет</label>
           <select
@@ -233,11 +240,7 @@ const SearchCases: React.FC = () => {
         </thead>
         <tbody>
           {filteredTestCases.map(tc => (
-            <tr
-              key={tc.id}
-              onClick={() => handleRowClick(tc.id)}
-              style={{ cursor: 'pointer' }}
-            >
+            <tr key={tc.id} onClick={() => handleRowClick(tc.id)}>
               <td>{tc.title}</td>
               <td>{tc.priority}</td>
               <td>{tc.class}</td>

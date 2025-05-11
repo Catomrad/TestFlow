@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import prisma from '../lib/prismaClient';
+import { sendWebhook } from '../service/webhokService';
 
 const createBugReport = async (req: Request, res: Response) => {
   const {
@@ -49,6 +50,20 @@ const createBugReport = async (req: Request, res: Response) => {
         testCase: { select: { title: true } },
       },
     });
+
+    // Send webhook for bug report creation
+    await sendWebhook(
+      'bug_report_created',
+      {
+        bugReportId: bugReport.id,
+        title: bugReport.title,
+        projectId: bugReport.projectId,
+        creatorId: bugReport.creatorId,
+        createdAt: bugReport.createdAt,
+      },
+      projectId
+    );
+
     res.json({ bugReport });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create bug report' });

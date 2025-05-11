@@ -1,0 +1,146 @@
+.search-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+}
+
+.search-container h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a192b;
+  margin-bottom: 24px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.filters .form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filters label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.filters input,
+.filters select {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1a192b;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.filters input:focus,
+.filters select:focus {
+  outline: none;
+  border-color: #1a192b;
+  box-shadow: 0 0 0 3px rgba(26, 25, 43, 0.1);
+}
+
+.search-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.search-table th {
+  font-weight: 600;
+  color: #1a192b;
+  text-align: left;
+  padding: 12px;
+  background: #f1f5f9;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.search-table td {
+  padding: 12px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.search-table tr {
+  transition: background 0.2s;
+}
+
+.search-table tr:hover {
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.error-message {
+  font-size: 0.875rem;
+  color: #dc2626;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.button-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: Около 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  background: #1a192b;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #2d2c4a;
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    margin: 20px;
+    padding: 16px;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filters .form-group {
+    min-width: 100%;
+  }
+
+  .search-table th,
+  .search-table td {
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  button {
+    width: 100%;
+  }
+}

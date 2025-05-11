@@ -178,7 +178,6 @@ const UserPage: React.FC = () => {
                         type="text"
                         value={editProjectName}
                         onChange={e => setEditProjectName(e.target.value)}
-                        className="form-input"
                         placeholder="Новое название"
                         disabled={isLoading}
                       />
@@ -292,7 +291,6 @@ const UserPage: React.FC = () => {
             placeholder="Название проекта"
             value={newProjectName}
             onChange={e => setNewProjectName(e.target.value)}
-            className="form-input"
             id="new-project-name"
             aria-describedby="new-project-error"
             disabled={isLoading}
@@ -313,7 +311,6 @@ const UserPage: React.FC = () => {
           <select
             value={selectedProjectId}
             onChange={e => setSelectedProjectId(e.target.value)}
-            className="form-input"
             id="project-select"
             disabled={isLoading}
           >
@@ -329,7 +326,6 @@ const UserPage: React.FC = () => {
             placeholder="Логин пользователя"
             value={invitee}
             onChange={e => setInvitee(e.target.value)}
-            className="form-input"
             id="invitee"
             aria-describedby="invitee-error"
             disabled={isLoading}
@@ -337,7 +333,6 @@ const UserPage: React.FC = () => {
           <select
             value={inviteeRole}
             onChange={e => setInviteeRole(e.target.value as 'admin' | 'user')}
-            className="form-input"
             disabled={isLoading}
           >
             <option value="admin">Администратор</option>

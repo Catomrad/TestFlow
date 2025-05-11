@@ -25,6 +25,7 @@ import SearchTestRuns from './pages/SearchTestRuns.tsx';
 import TestRunDetail from './pages/TestRunDetail.tsx';
 import TestRuns from './pages/TestRuns.tsx';
 import User from './pages/UserPage.tsx';
+import Webhooks from './pages/Webhooks.tsx';
 
 type PageValue =
   | string
@@ -62,6 +63,7 @@ const PAGES = new Map<string, PageValue>([
   ['Проекты', '/projects'],
   ['Тестирование', '/test-runs'],
   ['Диаграммы', '/diagrams'],
+  ['Вебхуки', '/webhooks'],
   ['Пользователь', '/user'],
 ]);
 
@@ -130,7 +132,7 @@ function App() {
           <Routes>
             <Route path="/auth" element={<LoginPage />} />
             <Route element={<PrivateRoute />}>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Diagrams />} />
               <Route path="/case/new" element={<NewTest />} />
               <Route path="/plan/new" element={<NewPlan />} />
               <Route path="/bug-report/new" element={<NewBugReport />} />
@@ -147,10 +149,11 @@ function App() {
               <Route path="/case/:id" element={<CaseDetail />} />
               <Route path="/plan/:id" element={<PlanDetail />} />
               <Route path="/bug-report/:id" element={<BugReportDetail />} />
-              <Route path="/test-run/:id" element={<TestRunDetail />} />
+              <Route path="/test-runs/:id" element={<TestRunDetail />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/project/:id" element={<ProjectDetail />} />
               <Route path="/diagrams" element={<Diagrams />} />
+              <Route path="/webhooks" element={<Webhooks />} />
             </Route>
           </Routes>
           <MyFooter />

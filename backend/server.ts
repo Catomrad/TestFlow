@@ -9,6 +9,7 @@ import path from 'path';
 import planRoutes from './src/routes/planRoutes';
 import projectRoutes from './src/routes/project';
 import testRunRoutes from './src/routes/testRunRoutes';
+import webhookRoutes from './src/routes/webhookRoutes';
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/module', moduleRoutes);
 app.use('/api/bug-reports', bugReportsRoutes);
 app.use('/api/test-runs', testRunRoutes);
 app.use('/api/diagram', diagramRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

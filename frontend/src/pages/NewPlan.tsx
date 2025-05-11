@@ -1,12 +1,14 @@
-import '../styles/TestCase.css';
+import '../styles/TestPlan.css';
 
 import React, { useEffect, useState } from 'react';
 
 import { useAuth } from '../context/AuthContext.tsx';
+import { useLocation } from 'react-router-dom';
 
 interface TestCase {
   id: string;
   title: string;
+  moduleId?: number;
 }
 
 interface TestPlanForm {
@@ -19,6 +21,7 @@ interface TestPlanForm {
 
 const NewPlan: React.FC = () => {
   const { user, projects, currentProjectId, createTestPlan } = useAuth();
+  const location = useLocation();
   const [formData, setFormData] = useState<TestPlanForm>({
     name: '',
     description: '',
@@ -31,6 +34,22 @@ const NewPlan: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    if (location.state) {
+      const { projectId, name, testCaseIds } = location.state as {
+        projectId?: number;
+        name?: string;
+        testCaseIds?: string[];
+      };
+      setFormData(prev => ({
+        ...prev,
+        projectId: projectId || prev.projectId,
+        name: name || prev.name,
+        testCaseIds: testCaseIds || prev.testCaseIds,
+      }));
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     if (formData.projectId) {
       fetchTestCases(formData.projectId);
     }
@@ -38,19 +57,26 @@ const NewPlan: React.FC = () => {
 
   const fetchTestCases = async (projectId: number) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Токен авторизации не найден');
       const response = await fetch(
         `http://localhost:5000/api/test-case?projectId=${projectId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      if (!response.ok) throw new Error('Failed to fetch test cases');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Не удалось загрузить тест-кейсы: ${response.status} ${errorText}`
+        );
+      }
       const data = await response.json();
       setTestCases(data.testCases);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch test cases');
+      setError(err.message || 'Не удалось загрузить тест-кейсы.');
     }
   };
 
@@ -76,15 +102,15 @@ const NewPlan: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      setError('You must be logged in to create a test plan.');
+      setError('Вы должны быть авторизованы для создания тест-плана.');
       return;
     }
     if (!formData.projectId) {
-      setError('Please select a project.');
+      setError('Выберите проект.');
       return;
     }
     if (!formData.name.trim()) {
-      setError('Name is required.');
+      setError('Название обязательно.');
       return;
     }
 
@@ -96,7 +122,7 @@ const NewPlan: React.FC = () => {
         formData.softwareVersion,
         formData.testCaseIds
       );
-      setSuccess('Test plan created successfully!');
+      setSuccess('Тест-план успешно создан!');
       setFormData({
         name: '',
         description: '',
@@ -105,12 +131,13 @@ const NewPlan: React.FC = () => {
         testCaseIds: [],
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to create test plan.');
+      setError(err.message || 'Не удалось создать тест-план.');
     }
   };
 
   return (
-    <div>
+    <div className="test-plan-container">
+      <h2>Создать тест-план</h2>
       <form id="testPlanForm" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="name">Название</label>
@@ -180,8 +207,8 @@ const NewPlan: React.FC = () => {
             placeholder="Введите описание тест-плана"
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
         <button type="submit">Создать тест-план</button>
       </form>
     </div>

@@ -1,4 +1,4 @@
-import '../styles/TestCase.css';
+import '../styles/BugReport.css';
 
 import React, { useEffect, useState } from 'react';
 
@@ -57,11 +57,11 @@ const NewBugReport: React.FC = () => {
           },
         }
       );
-      if (!response.ok) throw new Error('Failed to fetch test cases');
+      if (!response.ok) throw new Error('Не удалось загрузить тест-кейсы');
       const data = await response.json();
       setTestCases(data.testCases);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch test cases');
+      setError(err.message || 'Не удалось загрузить тест-кейсы');
     }
   };
 
@@ -110,7 +110,7 @@ const NewBugReport: React.FC = () => {
           body: JSON.stringify(bugReportData),
         }
       );
-      if (!response.ok) throw new Error('Failed to create bug report');
+      if (!response.ok) throw new Error('Не удалось создать баг-репорт');
       setSuccess('Баг-репорт успешно создан!');
       setFormData({
         title: '',
@@ -129,7 +129,8 @@ const NewBugReport: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="bug-report-container">
+      <h2>Создать баг-репорт</h2>
       <form id="bugReportForm" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="title">Название</label>
@@ -179,51 +180,49 @@ const NewBugReport: React.FC = () => {
             ))}
           </select>
         </div>
-        <div className="row">
-          <div className="form-group">
-            <label htmlFor="environment">Окружение</label>
-            <select
-              id="environment"
-              name="environment"
-              value={formData.environment}
-              onChange={handleChange}
-            >
-              <option value="">Выберите окружение</option>
-              <option value="windows">Windows</option>
-              <option value="linux">Linux</option>
-              <option value="android">Android</option>
-              <option value="ios">iOS</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="priority">Приоритет</label>
-            <select
-              id="priority"
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-            >
-              <option value="">Выберите приоритет</option>
-              <option value="high">Высокий</option>
-              <option value="medium">Средний</option>
-              <option value="low">Низкий</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="frequency">Частота</label>
-            <select
-              id="frequency"
-              name="frequency"
-              value={formData.frequency}
-              onChange={handleChange}
-            >
-              <option value="">Выберите частоту</option>
-              <option value="always">Всегда</option>
-              <option value="very_often">Очень часто</option>
-              <option value="often">Часто</option>
-              <option value="rarely">Редко</option>
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="environment">Окружение</label>
+          <select
+            id="environment"
+            name="environment"
+            value={formData.environment}
+            onChange={handleChange}
+          >
+            <option value="">Выберите окружение</option>
+            <option value="windows">Windows</option>
+            <option value="linux">Linux</option>
+            <option value="android">Android</option>
+            <option value="ios">iOS</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="priority">Приоритет</label>
+          <select
+            id="priority"
+            name="priority"
+            value={formData.priority}
+            onChange={handleChange}
+          >
+            <option value="">Выберите приоритет</option>
+            <option value="high">Высокий</option>
+            <option value="medium">Средний</option>
+            <option value="low">Низкий</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="frequency">Частота</label>
+          <select
+            id="frequency"
+            name="frequency"
+            value={formData.frequency}
+            onChange={handleChange}
+          >
+            <option value="">Выберите частоту</option>
+            <option value="always">Всегда</option>
+            <option value="very_often">Очень часто</option>
+            <option value="often">Часто</option>
+            <option value="rarely">Редко</option>
+          </select>
         </div>
         <div className="form-group">
           <label htmlFor="version">Версия</label>
@@ -233,7 +232,7 @@ const NewBugReport: React.FC = () => {
             name="version"
             value={formData.version}
             onChange={handleChange}
-            placeholder="Введите версию ПО"
+            placeholder="Введите версию"
           />
         </div>
         <div className="form-group">
@@ -250,6 +249,7 @@ const NewBugReport: React.FC = () => {
           </select>
         </div>
         <div className="form-group">
+          <label htmlFor="content">Описание</label>
           <textarea
             id="content"
             name="content"
@@ -258,8 +258,8 @@ const NewBugReport: React.FC = () => {
             placeholder="Опишите шаги для воспроизведения бага"
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
         <button type="submit">Сохранить баг-репорт</button>
       </form>
     </div>

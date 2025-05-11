@@ -1,4 +1,4 @@
-import '../styles/TestCase.css';
+import '../styles/ProjectDetail.css';
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -37,7 +37,7 @@ const ProjectDetail: React.FC = () => {
 
   useEffect(() => {
     if (!user || !id) {
-      setError('You must be logged in to view this project.');
+      setError('Вы должны быть авторизованы для просмотра проекта.');
       return;
     }
     fetchProject();
@@ -51,11 +51,11 @@ const ProjectDetail: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch project');
+      if (!response.ok) throw new Error('Не удалось загрузить проект');
       const data = await response.json();
       setProject(data.project);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch project');
+      setError(err.message || 'Не удалось загрузить проект');
     }
   };
 
@@ -69,18 +69,18 @@ const ProjectDetail: React.FC = () => {
           },
         }
       );
-      if (!response.ok) throw new Error('Failed to fetch modules');
+      if (!response.ok) throw new Error('Не удалось загрузить модули');
       const data = await response.json();
       setModules(data.modules);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch modules');
+      setError(err.message || 'Не удалось загрузить модули');
     }
   };
 
   const handleCreateModule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newModuleName.trim()) {
-      setError('Module name is required.');
+      setError('Название модуля обязательно.');
       return;
     }
     try {
@@ -92,17 +92,17 @@ const ProjectDetail: React.FC = () => {
         },
         body: JSON.stringify({ name: newModuleName, projectId: parseInt(id!) }),
       });
-      if (!response.ok) throw new Error('Failed to create module');
-      setSuccess('Module created successfully!');
+      if (!response.ok) throw new Error('Не удалось создать модуль');
+      setSuccess('Модуль успешно создан!');
       setNewModuleName('');
       fetchModules();
     } catch (err: any) {
-      setError(err.message || 'Failed to create module');
+      setError(err.message || 'Не удалось создать модуль');
     }
   };
 
   const handleDeleteModule = async (moduleId: number) => {
-    if (!window.confirm('Are you sure you want to delete this module?')) return;
+    if (!window.confirm('Вы уверены, что хотите удалить этот модуль?')) return;
     try {
       const response = await fetch(
         `http://localhost:5000/api/module/${moduleId}`,
@@ -113,79 +113,80 @@ const ProjectDetail: React.FC = () => {
           },
         }
       );
-      if (!response.ok) throw new Error('Failed to delete module');
-      setSuccess('Module deleted successfully!');
+      if (!response.ok) throw new Error('Не удалось удалить модуль');
+      setSuccess('Модуль успешно удален!');
       fetchModules();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete module');
+      setError(err.message || 'Не удалось удалить модуль');
     }
   };
 
   const handleInviteMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteData.username.trim()) {
-      setError('Username is required.');
+      setError('Имя пользователя обязательно.');
       return;
     }
     try {
       await inviteMember(parseInt(id!), inviteData.username, inviteData.role);
-      setSuccess('Member invited successfully!');
+      setSuccess('Участник успешно приглашен!');
       setInviteData({ username: '', role: 'member' });
       fetchProject();
     } catch (err: any) {
-      setError(err.message || 'Failed to invite member');
+      setError(err.message || 'Не удалось пригласить участника');
     }
   };
 
   const handleRemoveMember = async (userId: number) => {
-    if (!window.confirm('Are you sure you want to remove this member?')) return;
+    if (!window.confirm('Вы уверены, что хотите удалить этого участника?'))
+      return;
     try {
       await removeMember(parseInt(id!), userId);
-      setSuccess('Member removed successfully!');
+      setSuccess('Участник успешно удален!');
       fetchProject();
     } catch (err: any) {
-      setError(err.message || 'Failed to remove member');
+      setError(err.message || 'Не удалось удалить участника');
     }
   };
 
   const handleLeaveProject = async () => {
-    if (!window.confirm('Are you sure you want to leave this project?')) return;
+    if (!window.confirm('Вы уверены, что хотите покинуть этот проект?')) return;
     try {
       await leaveProject(parseInt(id!));
-      setSuccess('You have left the project!');
+      setSuccess('Вы покинули проект!');
       navigate('/projects');
     } catch (err: any) {
-      setError(err.message || 'Failed to leave project');
+      setError(err.message || 'Не удалось покинуть проект');
     }
   };
 
   const handleUpdateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!project || !project.name.trim()) {
-      setError('Project name is required.');
+      setError('Название проекта обязательно.');
       return;
     }
     try {
       await updateProject(parseInt(id!), project.name);
-      setSuccess('Project updated successfully!');
+      setSuccess('Проект успешно обновлен!');
       fetchProject();
     } catch (err: any) {
-      setError(err.message || 'Failed to update project');
+      setError(err.message || 'Не удалось обновить проект');
     }
   };
 
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
+    return <p className="error-message">{error}</p>;
   }
 
   if (!project) {
-    return <div>Loading...</div>;
+    return <div className="project-detail-container">Загрузка...</div>;
   }
 
   return (
-    <div className="project-container">
+    <div className="project-detail-container">
       <h2>Проект: {project.name}</h2>
-      <div>
+      <div className="project-info">
         <form onSubmit={handleUpdateProject}>
           <div className="form-group">
             <label htmlFor="name">Название проекта</label>
@@ -196,13 +197,14 @@ const ProjectDetail: React.FC = () => {
               onChange={e => setProject({ ...project, name: e.target.value })}
               required
               maxLength={255}
+              placeholder="Введите название проекта"
             />
           </div>
           <button type="submit">Обновить</button>
         </form>
         <p>
           <strong>Создан:</strong>{' '}
-          {new Date(project.createdAt).toLocaleDateString()}
+          {new Date(project.createdAt).toLocaleDateString('ru-RU')}
         </p>
       </div>
 
@@ -221,15 +223,22 @@ const ProjectDetail: React.FC = () => {
         </div>
         <button type="submit">Добавить модуль</button>
       </form>
-      <ul>
-        {modules.map(module => (
-          <li key={module.id}>
-            {module.name}
-            <button onClick={() => handleDeleteModule(module.id)}>
-              Удалить
-            </button>
-          </li>
-        ))}
+      <ul className="module-list">
+        {modules.length === 0 ? (
+          <li>Нет модулей</li>
+        ) : (
+          modules.map(module => (
+            <li key={module.id}>
+              {module.name}
+              <button
+                className="delete-button"
+                onClick={() => handleDeleteModule(module.id)}
+              >
+                Удалить
+              </button>
+            </li>
+          ))
+        )}
       </ul>
 
       <h3>Участники</h3>
@@ -261,12 +270,15 @@ const ProjectDetail: React.FC = () => {
         </div>
         <button type="submit">Пригласить</button>
       </form>
-      <ul>
+      <ul className="member-list">
         {project.members.map(member => (
           <li key={member.user.id}>
             {member.user.username} ({member.role})
             {member.user.id !== user?.id && (
-              <button onClick={() => handleRemoveMember(member.user.id)}>
+              <button
+                className="delete-button"
+                onClick={() => handleRemoveMember(member.user.id)}
+              >
                 Удалить
               </button>
             )}
@@ -274,10 +286,16 @@ const ProjectDetail: React.FC = () => {
         ))}
       </ul>
 
-      <button onClick={handleLeaveProject}>Покинуть проект</button>
-      <button onClick={() => navigate('/projects')}>Назад</button>
-      {success && <p style={{ color: 'green' }}>{success}</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div className="button-group">
+        <button className="leave-button" onClick={handleLeaveProject}>
+          Покинуть проект
+        </button>
+        <button className="back-button" onClick={() => navigate('/projects')}>
+          Назад
+        </button>
+      </div>
+      {success && <p className="success-message">{success}</p>}
+      {error && <p className="error-message">{error}</p>}
     </div>
   );
 };

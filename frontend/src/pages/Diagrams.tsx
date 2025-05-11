@@ -27,6 +27,12 @@ interface Module {
   name: string;
 }
 
+interface TestCase {
+  id: string;
+  title: string;
+  moduleId?: number;
+}
+
 interface DiagramNode {
   id: string;
   projectId: number;
@@ -53,6 +59,8 @@ const Diagrams: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [modules, setModules] = useState<Module[]>([]);
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [selectedNode, setSelectedNode] = useState<DiagramNode | null>(null);
   const [newNodeLabel, setNewNodeLabel] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -87,9 +95,31 @@ const Diagrams: React.FC = () => {
     }
   };
 
+  const fetchTestCases = async (projectId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authorization token found');
+      const response = await fetch(
+        `http://localhost:5000/api/test-case?projectId=${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch test cases: ${response.status} ${errorText}`
+        );
+      }
+      const data = await response.json();
+      setTestCases(data.testCases);
+    } catch (err: any) {
+      setError(err.message || 'Не удалось загрузить тест-кейсы.');
+    }
+  };
+
   const fetchDiagram = async (projectId: number) => {
     try {
-      console.log('Fetching diagram for projectId:', projectId);
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authorization token found');
       const response = await fetch(
@@ -100,7 +130,6 @@ const Diagrams: React.FC = () => {
       );
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Fetch diagram response:', response.status, errorText);
         throw new Error(
           `Failed to fetch diagram: ${response.status} ${errorText}`
         );
@@ -110,7 +139,7 @@ const Diagrams: React.FC = () => {
         id: node.id,
         type: 'default',
         position: { x: node.positionX, y: node.positionY },
-        data: { label: node.label },
+        data: { label: node.label, moduleId: node.moduleId },
       }));
       const reactFlowEdges: Edge[] = data.edges.map((edge: DiagramEdge) => ({
         id: edge.id,
@@ -119,27 +148,25 @@ const Diagrams: React.FC = () => {
       }));
       setNodes(reactFlowNodes);
       setEdges(reactFlowEdges);
-      console.log('Diagram fetched:', {
-        nodes: reactFlowNodes.length,
-        edges: reactFlowEdges.length,
-      });
     } catch (err: any) {
-      console.error('Error fetching diagram:', err);
       setError(err.message || 'Не удалось загрузить схему.');
     }
   };
 
-  const handleSelectProject = (projectId: number) => {
+  const handleSelectProject = async (projectId: number) => {
     setSelectedProjectId(projectId);
     setNodes([]);
     setEdges([]);
     setModules([]);
+    setTestCases([]);
+    setSelectedNode(null);
     setNewNodeLabel('');
     setSelectedModuleId(null);
     setError(null);
     setSuccess(null);
-    fetchModules(projectId);
-    fetchDiagram(projectId);
+    await fetchModules(projectId);
+    await fetchTestCases(projectId);
+    await fetchDiagram(projectId);
   };
 
   const onConnect = useCallback(
@@ -222,7 +249,7 @@ const Diagrams: React.FC = () => {
           id: data.node.id,
           type: 'default',
           position: { x: data.node.positionX, y: data.node.positionY },
-          data: { label: data.node.label },
+          data: { label: data.node.label, moduleId: data.node.moduleId },
         },
       ]);
       setNewNodeLabel('');
@@ -232,6 +259,38 @@ const Diagrams: React.FC = () => {
       setError(err.message || 'Не удалось создать узел.');
     }
   };
+
+  const handleGenerateTestPlan = () => {
+    if (!selectedProjectId || !selectedNode?.moduleId) return;
+    const module = modules.find(m => m.id === selectedNode.moduleId);
+    if (!module) return;
+    const moduleTestCases = testCases
+      .filtr(tc => tc.moduleId === selectedNode.moduleId)
+      .map(tc => tc.id);
+    navigate('/plan/new', {
+      state: {
+        projectId: selectedProjectId,
+        moduleId: selectedNode.moduleId,
+        name: `Тестирование модуля "${module.name}"`,
+        testCaseIds: moduleTestCases,
+      },
+    });
+  };
+
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      const diagramNode: DiagramNode = {
+        id: node.id,
+        projectId: selectedProjectId!,
+        moduleId: node.data.moduleId,
+        label: node.data.label,
+        positionX: node.position.x,
+        positionY: node.position.y,
+      };
+      setSelectedNode(diagramNode);
+    },
+    [selectedProjectId]
+  );
 
   const onNodeDragStop = useCallback(
     async (event: React.MouseEvent, node: Node) => {
@@ -286,6 +345,7 @@ const Diagrams: React.FC = () => {
         }
       }
       setSuccess('Узел(ы) удален(ы)!');
+      setSelectedNode(null);
     } catch (err: any) {
       setError(err.message || 'Не удалось удалить узел(ы).');
     }
@@ -317,7 +377,19 @@ const Diagrams: React.FC = () => {
   }, []);
 
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
+    return (
+      <p
+        className="error-message"
+        style={{
+          color: '#dc2626',
+          textAlign: 'center',
+          padding: '24px',
+          fontSize: '1rem',
+        }}
+      >
+        {error}
+      </p>
+    );
   }
 
   return (
@@ -327,80 +399,130 @@ const Diagrams: React.FC = () => {
         <h3>Выберите проект</h3>
         <ul>
           {projects.map((project: Project) => (
-            <li key={project.id}>
+            <li
+              key={project.id}
+              onClick={() => handleSelectProject(project.id)}
+              className={selectedProjectId === project.id ? 'selected' : ''}
+            >
               {project.name}
-              <button
-                onClick={() => handleSelectProject(project.id)}
-                className={selectedProjectId === project.id ? 'selected' : ''}
-              >
-                Выбрать
-              </button>
             </li>
           ))}
         </ul>
-        <button onClick={() => navigate('/')}>Назад</button>
       </div>
       <div className="diagrams-main">
         {selectedProjectId ? (
-          <>
-            <h3>
-              Блок-схема проекта{' '}
-              {projects.find(p => p.id === selectedProjectId)?.name}
-            </h3>
-            <form onSubmit={handleCreateNode} className="node-form">
-              <div className="form-group">
-                <label htmlFor="newNodeLabel">Новый узел</label>
-                <input
-                  type="text"
-                  id="newNodeLabel"
-                  value={newNodeLabel}
-                  onChange={e => setNewNodeLabel(e.target.value)}
-                  placeholder="Введите название узла"
-                  maxLength={255}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="moduleId">Модуль (опционально)</label>
-                <select
-                  id="moduleId"
-                  value={selectedModuleId || ''}
-                  onChange={e =>
-                    setSelectedModuleId(
-                      e.target.value ? parseInt(e.target.value) : null
-                    )
-                  }
+          <div className="diagrams-content">
+            <div className="diagrams-flow">
+              <h3>
+                Блок-схема проекта{' '}
+                {projects.find(p => p.id === selectedProjectId)?.name}
+              </h3>
+              <form onSubmit={handleCreateNode} className="node-form">
+                <div className="form-group">
+                  <label htmlFor="newNodeLabel">Новый узел</label>
+                  <input
+                    type="text"
+                    id="newNodeLabel"
+                    value={newNodeLabel}
+                    onChange={e => setNewNodeLabel(e.target.value)}
+                    placeholder="Введите название узла"
+                    maxLength={255}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="moduleId">Модуль (опционально)</label>
+                  <select
+                    id="moduleId"
+                    value={selectedModuleId || ''}
+                    onChange={e =>
+                      setSelectedModuleId(
+                        e.target.value ? parseInt(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">Без модуля</option>
+                    {modules.map(module => (
+                      <option key={module.id} value={module.id}>
+                        {module.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button type="submit">Добавить узел</button>
+              </form>
+              {success && (
+                <p
+                  style={{
+                    color: '#16a34a',
+                    fontSize: '0.875rem',
+                    marginBottom: '16px',
+                  }}
                 >
-                  <option value="">Без модуля</option>
-                  {modules.map(module => (
-                    <option key={module.id} value={module.id}>
-                      {module.name}
-                    </option>
-                  ))}
-                </select>
+                  {success}
+                </p>
+              )}
+              <div className="diagram-wrapper">
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onNodeClick={onNodeClick}
+                  onNodeDragStop={onNodeDragStop}
+                  onNodesDelete={onNodesDelete}
+                  onEdgesDelete={onEdgesDelete}
+                  fitView
+                >
+                  <Background />
+                  <Controls />
+                  <MiniMap />
+                </ReactFlow>
               </div>
-              <button type="submit">Добавить узел</button>
-            </form>
-            {success && <p style={{ color: 'green' }}>{success}</p>}
-            <div className="diagram-wrapper">
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeDragStop={onNodeDragStop}
-                onNodesDelete={onNodesDelete}
-                onEdgesDelete={onEdgesDelete}
-                fitView
-              >
-                <Background />
-                <Controls />
-                <MiniMap />
-              </ReactFlow>
             </div>
-          </>
+            <div className="diagrams-right-panel">
+              <h3>Тест-кейсы</h3>
+              {selectedNode ? (
+                selectedNode.moduleId ? (
+                  <>
+                    <p>
+                      Модуль:{' '}
+                      {modules.find(m => m.id === selectedNode.moduleId)
+                        ?.name || 'Неизвестный модуль'}
+                    </p>
+                    <ul>
+                      {testCases
+                        .filter(tc => tc.moduleId === selectedNode.moduleId)
+                        .map(tc => (
+                          <li key={tc.id}>{tc.title}</li>
+                        ))}
+                    </ul>
+                    {testCases.filter(
+                      tc => tc.moduleId === selectedNode.moduleId
+                    ).length === 0 && <p>Нет тест-кейсов для этого модуля.</p>}
+                    <button onClick={handleGenerateTestPlan}>
+                      Сгенерировать тест-план
+                    </button>
+                  </>
+                ) : (
+                  <p>У этого узла нет привязанного модуля.</p>
+                )
+              ) : (
+                <p>Выберите узел на диаграмме.</p>
+              )}
+            </div>
+          </div>
         ) : (
-          <p>Выберите проект для работы с диаграммой.</p>
+          <p
+            style={{
+              textAlign: 'center',
+              color: '#6b7280',
+              fontSize: '1rem',
+              padding: '24px',
+            }}
+          >
+            Выберите проект для работы с диаграммой.
+          </p>
         )}
       </div>
     </div>

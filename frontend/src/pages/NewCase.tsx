@@ -64,11 +64,11 @@ const NewTest: React.FC = () => {
           },
         }
       );
-      if (!response.ok) throw new Error('Failed to fetch modules');
+      if (!response.ok) throw new Error('Не удалось загрузить модули');
       const data = await response.json();
       setModules(data.modules);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch modules');
+      setError(err.message || 'Не удалось загрузить модули');
     }
   };
 
@@ -82,7 +82,7 @@ const NewTest: React.FC = () => {
       ...prev,
       [name]:
         name === 'projectId' || name === 'moduleId' ? parseInt(value) : value,
-      ...(name === 'projectId' ? { moduleId: 0 } : {}), // Сбрасываем moduleId при смене проекта
+      ...(name === 'projectId' ? { moduleId: 0 } : {}),
     }));
   };
 
@@ -101,26 +101,26 @@ const NewTest: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      setError('You must be logged in to create a test case.');
+      setError('Вы должны быть авторизованы для создания тест-кейса.');
       return;
     }
     if (!formData.projectId) {
-      setError('Please select a project.');
+      setError('Выберите проект.');
       return;
     }
     if (!formData.title.trim()) {
-      setError('Title is required.');
+      setError('Название обязательно.');
       return;
     }
     if (!formData.moduleId) {
-      setError('Please select a module.');
+      setError('Выберите модуль.');
       return;
     }
 
     const testCaseData = { ...formData, creatorId: user.id };
     try {
       await createTestCase(testCaseData);
-      setSuccess('Test case created successfully!');
+      setSuccess('Тест-кейс успешно создан!');
       setFormData({
         title: '',
         priority: '',
@@ -134,12 +134,13 @@ const NewTest: React.FC = () => {
         projectId: formData.projectId,
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to create test case.');
+      setError(err.message || 'Не удалось создать тест-кейс.');
     }
   };
 
   return (
-    <div>
+    <div className="test-case-container">
+      <h2>Создать тест-кейс</h2>
       <form id="testCaseForm" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="title">Название</label>
@@ -314,8 +315,8 @@ const NewTest: React.FC = () => {
             placeholder="Введите описание тест-кейса"
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
         <button type="submit">Сохранить тест-кейс</button>
       </form>
     </div>
