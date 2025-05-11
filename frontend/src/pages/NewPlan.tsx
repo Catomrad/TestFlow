@@ -119,7 +119,7 @@ const NewPlan: React.FC = () => {
             name="name"
             id="name"
             value={formData.name}
-            ongimporChange={handleChange}
+            onChange={handleChange}
             required
             maxLength={255}
             placeholder="Введите название тест-плана"

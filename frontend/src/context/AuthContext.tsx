@@ -121,6 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         currentProjectId &&
         !response.data.projects.some((p: Project) => p.id === currentProjectId)
       ) {
+        console.log('Current project not found, resetting currentProjectId');
         setCurrentProjectId(null);
       }
     } catch (error: any) {
@@ -322,6 +323,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateProject = async (projectId: number, name: string) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No token');
+    if (!projectId) throw new Error('Project ID is required');
 
     try {
       await axios.patch(
@@ -340,6 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteProject = async (projectId: number) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No token');
+    if (!projectId) throw new Error('Project ID is required');
 
     try {
       await axios.delete(`http://localhost:5000/api/projects/${projectId}`, {
@@ -354,6 +357,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const setCurrentProject = (projectId: number | null) => {
+    console.log('setCurrentProject called with projectId:', projectId);
+    if (
+      projectId !== null &&
+      (!Number.isInteger(projectId) || projectId <= 0)
+    ) {
+      console.error('Invalid projectId:', projectId);
+      return;
+    }
     setCurrentProjectId(projectId);
   };
 

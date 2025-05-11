@@ -2,6 +2,7 @@ import {
   createProject,
   deleteProject,
   getProjectById,
+  getProjectMembers,
   getProjects,
   inviteMember,
   leaveProject,
@@ -14,7 +15,8 @@ import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-// console.log('Registering project routes...');
+console.log('Projects routes loaded'); // Для отладки
+
 router.get(
   '/:id',
   authenticateToken as RequestHandler,
@@ -55,5 +57,10 @@ router.delete(
   authenticateToken as RequestHandler,
   deleteProject as RequestHandler
 );
+router.get(
+  '/members',
+  authenticateToken as RequestHandler,
+  getProjectMembers as RequestHandler
+); // Новый маршрут
 
 export default router;
