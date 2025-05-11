@@ -1,0 +1,107 @@
+.react-flow__node-default {
+  background: #fff;
+  border: 1px solid #1a192b;
+  border-radius: 3px;
+  padding: 10px;
+  width: 150px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.react-flow__edge-path {
+  stroke: #b1b1b7;
+  stroke-width: 2;
+}
+
+.project-container {
+  padding: 20px;
+}
+
+.diagrams-container {
+  display: flex;
+  height: 80vh;
+  padding: 20px;
+}
+
+.diagrams-sidebar {
+  width: 30%;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.diagrams-main {
+  width: 70%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.node-form {
+  margin-bottom: 20px;
+}
+
+.diagram-wrapper {
+  flex: 1;
+  border: 2px solid #1a192b;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.diagrams-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.diagrams-sidebar li {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.diagrams-sidebar button {
+  padding: 5px 10px;
+  border: 1px solid #252162;
+  border-radius: 3px;
+  background: #738be8;
+  cursor: pointer;
+}
+
+.diagrams-sidebar button.selected {
+  background: #252162;
+  color: #fff;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #f2f2f2;
+}

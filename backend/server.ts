@@ -2,6 +2,7 @@ import authRoutes from './src/routes/auth';
 import bugReportsRoutes from './src/routes/bugReportRoutes';
 import caseRoutes from './src/routes/caseRoutes';
 import cors from 'cors';
+import diagramRoutes from './src/routes/diagramRoutes';
 import express from 'express';
 import moduleRoutes from './src/routes/moduleRoutes';
 import path from 'path';
@@ -21,6 +22,7 @@ app.use('/api/test-plan', planRoutes);
 app.use('/api/module', moduleRoutes);
 app.use('/api/bug-reports', bugReportsRoutes);
 app.use('/api/test-runs', testRunRoutes);
+app.use('/api/diagram', diagramRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

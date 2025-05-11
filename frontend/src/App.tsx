@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { AuthProvider } from './context/AuthContext.tsx';
 import BugReportDetail from './pages/BugReportDetail.tsx';
 import CaseDetail from './pages/CaseDetail.tsx';
+import Diagrams from './pages/Diagrams.tsx';
 import Home from './pages/Home.js';
 import LoginPage from './pages/LoginPage.tsx';
 import NewBugReport from './pages/NewBugReport.tsx';
@@ -60,6 +61,7 @@ const PAGES = new Map<string, PageValue>([
   ],
   ['Проекты', '/projects'],
   ['Тестирование', '/test-runs'],
+  ['Диаграммы', '/diagrams'],
   ['Пользователь', '/user'],
 ]);
 
@@ -145,9 +147,10 @@ function App() {
               <Route path="/case/:id" element={<CaseDetail />} />
               <Route path="/plan/:id" element={<PlanDetail />} />
               <Route path="/bug-report/:id" element={<BugReportDetail />} />
-              <Route path="/test-runs/:id" element={<TestRunDetail />} />
+              <Route path="/test-run/:id" element={<TestRunDetail />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/project/:id" element={<ProjectDetail />} />
+              <Route path="/diagrams" element={<Diagrams />} />
             </Route>
           </Routes>
           <MyFooter />

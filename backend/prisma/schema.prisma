@@ -11,18 +11,18 @@ datasource db {
 }
 
 model User {
-  id           Int             @id @default(autoincrement())
-  username     String          @unique
-  password     String
-  role         String          @default("user")
-  createdAt    DateTime        @default(now())
-  memberships  ProjectMember[]
-  testPlans    TestPlan[]
-  testCases    TestCase[]
-  flowcharts   Flowchart[]
-  projects     Project[]       @relation("ProjectCreator")
-  bugReports   BugReport[]     @relation("BugReportCreator")
-  testRuns     TestRun[]       @relation("TestRunResponsible")
+  id          Int             @id @default(autoincrement())
+  username    String          @unique
+  password    String
+  role        String          @default("user")
+  createdAt   DateTime        @default(now())
+  memberships ProjectMember[]
+  testPlans   TestPlan[]
+  testCases   TestCase[]
+  flowcharts  Flowchart[]
+  projects    Project[]       @relation("ProjectCreator")
+  bugReports  BugReport[]     @relation("BugReportCreator")
+  testRuns    TestRun[]       @relation("TestRunResponsible")
 }
 
 model Project {
@@ -38,6 +38,8 @@ model Project {
   modules     Module[]
   bugReports  BugReport[]
   testRuns    TestRun[]
+  DiagramNode DiagramNode[]
+  DiagramEdge DiagramEdge[]
 }
 
 model ProjectMember {
@@ -52,46 +54,47 @@ model ProjectMember {
 }
 
 model Module {
-  id        Int       @id @default(autoincrement())
-  name      String
-  projectId Int
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  testCases TestCase[]
+  id          Int           @id @default(autoincrement())
+  name        String
+  projectId   Int
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCases   TestCase[]
+  DiagramNode DiagramNode[]
 }
 
 model TestPlan {
-  id              String           @id @default(uuid())
+  id              String             @id @default(uuid())
   name            String
   description     String
   softwareVersion String?
   projectId       Int
-  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project         Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   creatorId       Int?
-  creator         User?            @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-  createdAt       DateTime         @default(now())
+  creator         User?              @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt       DateTime           @default(now())
   testCases       TestPlanTestCase[]
   testRuns        TestRun[]
 }
 
 model TestCase {
-  id           String           @id @default(uuid())
+  id           String             @id @default(uuid())
   title        String
   priority     String
   class        String
   moduleId     Int
-  module       Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module       Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   status       String
   template     String
   requiredTime Json
   content      String
   description  String
   projectId    Int
-  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   creatorId    Int?
-  creator      User?            @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-  createdAt    DateTime         @default(now())
+  creator      User?              @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
   testPlans    TestPlanTestCase[]
-  bugReports   BugReport[]      @relation("BugReportTestCase")
+  bugReports   BugReport[]        @relation("BugReportTestCase")
 }
 
 model TestPlanTestCase {
@@ -132,17 +135,44 @@ model BugReport {
 }
 
 model TestRun {
-  id              String    @id @default(uuid())
-  title           String
-  content         String
-  status          String // "planned", "in_progress", "completed", "rejected"
-  plannedDate     DateTime
-  completionDate  DateTime?
-  projectId       Int
-  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  testPlanId      String?
-  testPlan        TestPlan? @relation(fields: [testPlanId], references: [id], onDelete: SetNull)
-  responsibleId   Int
-  responsible     User      @relation(fields: [responsibleId], references: [id], onDelete: Cascade, name: "TestRunResponsible")
-  createdAt       DateTime  @default(now())
+  id             String    @id @default(uuid())
+  title          String
+  content        String
+  status         String // "planned", "in_progress", "completed", "rejected"
+  plannedDate    DateTime
+  completionDate DateTime?
+  projectId      Int
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testPlanId     String?
+  testPlan       TestPlan? @relation(fields: [testPlanId], references: [id], onDelete: SetNull)
+  responsibleId  Int
+  responsible    User      @relation(fields: [responsibleId], references: [id], onDelete: Cascade, name: "TestRunResponsible")
+  createdAt      DateTime  @default(now())
+}
+
+model DiagramNode {
+  id            String        @id @default(uuid())
+  projectId     Int
+  project       Project       @relation(fields: [projectId], references: [id])
+  moduleId      Int? // Привязка к модулю (опционально)
+  module        Module?       @relation(fields: [moduleId], references: [id])
+  label         String // Название узла (например, имя модуля или пользовательский текст)
+  positionX     Float // Позиция X на схеме
+  positionY     Float // Позиция Y на схеме
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  edgesAsSource DiagramEdge[] @relation("SourceNode")
+  edgesAsTarget DiagramEdge[] @relation("TargetNode")
+}
+
+model DiagramEdge {
+  id        String      @id @default(uuid())
+  projectId Int
+  project   Project     @relation(fields: [projectId], references: [id])
+  sourceId  String
+  source    DiagramNode @relation("SourceNode", fields: [sourceId], references: [id])
+  targetId  String
+  target    DiagramNode @relation("TargetNode", fields: [targetId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
