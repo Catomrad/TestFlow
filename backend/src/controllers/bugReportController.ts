@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import prisma from '../lib/prismaClient';
-import { sendWebhook } from '../service/webhokService';
+import { sendWebhook } from '../lib/webhokService';
 
 const createBugReport = async (req: Request, res: Response) => {
   const {
@@ -57,6 +57,13 @@ const createBugReport = async (req: Request, res: Response) => {
       {
         bugReportId: bugReport.id,
         title: bugReport.title,
+        environment: bugReport.environment,
+        version: bugReport.version,
+        priority: bugReport.priority,
+        frequency: bugReport.frequency,
+        content: bugReport.content,
+        template: bugReport.template,
+        testCaseId: bugReport.testCaseId,
         projectId: bugReport.projectId,
         creatorId: bugReport.creatorId,
         createdAt: bugReport.createdAt,

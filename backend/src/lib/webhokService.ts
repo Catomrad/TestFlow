@@ -1,5 +1,5 @@
 import axios from 'axios';
-import prisma from '../lib/prismaClient';
+import prisma from './prismaClient';
 
 async function sendWebhook(event: string, payload: any, projectId: number) {
   try {
